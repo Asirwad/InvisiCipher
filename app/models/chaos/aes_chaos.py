@@ -1,36 +1,64 @@
-import numpy as np
+from base64 import b64encode, b64decode
+import hashlib
 from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
 import os
-import io
+from Crypto.Random import get_random_bytes
+from Crypto.Util.Padding import pad, unpad
 from PIL import Image
 
 
-def encrypt(image, key):
-    # convert the image to bytes
-    with io.BytesIO() as output:
-        image.save(output, format=image.format)
-        image_bytes = output.getvalue()
-    # Encryption object
-    cipher = AES.new(key, AES.MODE_CBC, os.urandom(16))
-    # generating random initialization vector (IV)
-    iv = cipher.iv
-    padded_image = pad(image_bytes, 16)
-    encrypted_image = cipher.encrypt(padded_image)
-    # convert encrypted image bytes to image format
-    encrypted_image_array = np.frombuffer(encrypted_image, dtype=np.uint8)
-    encrypted_image_pil = Image.fromarray(encrypted_image_array)
-    return iv, encrypted_image_pil
+def encrypt(image_path, key):
+    # Load the image and convert it into bytes
+    with open(image_path, 'rb') as f:
+        image_data = f.read()
 
+    # Encode the image data as a base64 string
+    image_data = b64encode(image_data)
 
-def decrypt(encrypted_image, key, iv):
-    # convert the image to bytes
-    with io.BytesIO() as output:
-        encrypted_image.save(output, format=encrypted_image.format)
-        image_bytes = output.getvalue()
+    # Create a SHA-256 hash of the key
+    key = hashlib.sha256(key.encode()).digest()
+
+    # Generate a random initialization vector
+    iv = get_random_bytes(AES.block_size)
+
+    # Create an AES Cipher object
     cipher = AES.new(key, AES.MODE_CBC, iv)
-    decrypted_image = cipher.decrypt(image_bytes)
-    unpadded_image = unpad(decrypted_image, 16)
-    # convert bytes to image
-    image = Image.open(io.BytesIO(unpadded_image))
-    return image
+
+    # Encrypt the image data
+    encrypted_image_data = cipher.encrypt(pad(image_data, AES.block_size))
+
+    # Save the encrypted image data to a new file
+    with open(image_path + '.enc', 'wb') as f:
+        f.write(iv + encrypted_image_data)
+
+
+def decrypt(encrypted_image_path, key):
+    # Load the encrypted image data
+    with open(encrypted_image_path, 'rb') as f:
+        encrypted_image_data = f.read()
+
+    # Create a SHA-256 hash of the key
+    key = hashlib.sha256(key.encode()).digest()
+
+    # Extract the initialization vector from the encrypted image data
+    iv = encrypted_image_data[:AES.block_size]
+    encrypted_image_data = encrypted_image_data[AES.block_size:]
+
+    # Create an AES Cipher object
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+
+    try:
+        # Decrypt the encrypted image data
+        decrypted_image_data = unpad(cipher.decrypt(encrypted_image_data), AES.block_size)
+
+        # Decode the decrypted image data from a base64 string
+        decrypted_image_data = b64decode(decrypted_image_data)
+
+        # Save the decrypted image data to a new file
+        filename = encrypted_image_path.replace('.enc', '').replace('.png', '').replace('.jpg', '') + '.dec' + '.png'
+        with open(filename, 'wb') as f:
+            f.write(decrypted_image_data)
+
+    except ValueError:
+        print("Wrong Key ):")
+        return

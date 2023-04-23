@@ -7,6 +7,8 @@ from PIL import Image
 from app.models.bit_plane.bit_plane_slicer import BitPlaneProcessor
 from app.models.bit_plane.image import ImageProcessor
 from app.models.chaos import logistic_map_chaos
+from app.models.chaos import aes_chaos
+from app.models.bit_plane import bit_plane_enhancer
 
 """ Bit-plane slicing """
 
@@ -20,28 +22,19 @@ output_filename = "output_sliced.png"
 plane_image_pil = Image.fromarray(np.uint8(plane_image * 255))
 plane_image_pil.save(output_filename)
 print(f"Sliced output saved to {output_filename}")
-"""
- AES Encryption 
 
+
+# AES Encryption
 filename = filedialog.askopenfilename(title="Select Image", filetypes=(("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
-image = Image.open(filename)
+key = input("Enter your secret key : ")
+aes_chaos.encrypt(filename, key)
 
-key = secrets.token_bytes(16)
-print("key = ", key)
+# AES Decryption
+print("AES Decryption")
+key = input("Enter your secret key : ")
+filename = filedialog.askopenfilename(title="Select Image", filetypes=(("All files", "*.*"), ("JPEG files", "*.jpg;*.jpeg"), ("PNG files", "*.png")))
+aes_chaos.decrypt(filename, key)
 
-iv, encrypted_image = aes_chaos.encrypt(image, key)
-print("IV = ", iv)
-encrypted_image.show()
-output_filename = "output_encrypted.png"
-encrypted_image.save(output_filename)
-print(f"Encrypted output saved to {output_filename}")
-
- AES Decryption 
-filename = filedialog.askopenfilename(title="Select Image", filetypes=(("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
-image = Image.open(filename)
-decrypted_image = aes_chaos.decrypt(encrypted_image, key, iv)
-decrypted_image.show()
-"""
 
 # logistic map encryption
 key = 0.1
@@ -53,3 +46,9 @@ print("Encrypted output saved to output_encrypted.png")
 filename = filedialog.askopenfilename(title="Select Image", filetypes=(("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
 logistic_map_chaos.decrypt(filename, key)
 print("Encrypted output saved to output_decrypted.png")
+
+"""n-1 bit only to n-bit image"""
+filename = filedialog.askopenfilename(title="Select Image", filetypes=(("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
+image = ImageProcessor(filename)
+num_of_bit_planes = image.num_bit_planes
+bit_plane_enhancer.enhance(filename, num_of_bit_planes)
