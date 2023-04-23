@@ -1,10 +1,8 @@
 from base64 import b64encode, b64decode
 import hashlib
 from Crypto.Cipher import AES
-import os
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
-from PIL import Image
 
 
 def encrypt(image_path, key):
