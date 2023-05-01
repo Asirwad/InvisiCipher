@@ -27,4 +27,3 @@ def count_bit_planes(image):
 
     # Return the number of bits required
     return bits_required
-
