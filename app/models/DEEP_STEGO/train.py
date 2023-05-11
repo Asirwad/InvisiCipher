@@ -2,8 +2,6 @@ import os
 import glob
 import numpy as np
 import tensorflow.compat.v1 as tf  # Ensure TF2 compatibility
-
-tf.disable_v2_behavior()
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Input, concatenate, Conv2D, GaussianNoise
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -19,6 +17,10 @@ import matplotlib.pyplot as plt
 from random import randint
 import imageio
 from io import StringIO, BytesIO
+from app.models.DEEP_STEGO.Utils.preprocessing import normalize_batch, denormalize_batch
+from app.models.DEEP_STEGO.Utils.customLossWeight import custom_loss_1, custom_loss_2
+
+tf.disable_v2_behavior()
 
 # %matplotlib inline
 
@@ -35,69 +37,37 @@ PRETRAINED = 'checkpoints/steg_model-04-0.03.hdf5'
 # Configure batch size
 BATCH_SIZE = 12
 
-# Load test data as numpu arrays
+# Load test data as numpy arrays
 test_images = np.load(TEST_DATA)
 
 # Sample test data
-tsecret = test_images[0].reshape((1, 224, 224, 3))
-tcover = test_images[1].reshape((1, 224, 224, 3))
-
-
-# Preprocessing functions
-def normalize_batch(imgs):
-    '''Performs channel-wise z-score normalization'''
-
-    return (imgs - np.array([0.485, 0.456, 0.406])) / np.array([0.229, 0.224, 0.225])
-
-
-def denormalize_batch(imgs, should_clip=True):
-    '''Denormalize the images for prediction'''
-
-    imgs = (imgs * np.array([0.229, 0.224, 0.225])) + np.array([0.485, 0.456, 0.406])
-
-    if should_clip:
-        imgs = np.clip(imgs, 0, 1)
-    return imgs
+test_secret = test_images[0].reshape((1, 224, 224, 3))
+test_cover = test_images[1].reshape((1, 224, 224, 3))
 
 
 # Image data generator
-input_imgen = ImageDataGenerator(rescale=1. / 255)
-test_imgen = ImageDataGenerator(rescale=1. / 255)
+input_image_gen = ImageDataGenerator(rescale=1. / 255)
+test_image_gen = ImageDataGenerator(rescale=1. / 255)
 
 
 # Custom generator for loading training images from directory
-def generate_generator_multiple(generator, direc):
-    genX1 = generator.flow_from_directory(direc, target_size=(224, 224), batch_size=BATCH_SIZE, shuffle=True, seed=3,
-                                          class_mode=None)
-    genX2 = generator.flow_from_directory(direc, target_size=(224, 224), batch_size=BATCH_SIZE, shuffle=True, seed=8,
-                                          class_mode=None)
+def generate_generator_multiple(generator, direct):
+    gen_X1 = generator.flow_from_directory(direct, target_size=(224, 224), batch_size=BATCH_SIZE, shuffle=True, seed=3, class_mode=None)
+    gen_X2 = generator.flow_from_directory(direct, target_size=(224, 224), batch_size=BATCH_SIZE, shuffle=True, seed=8, class_mode=None)
 
     while True:
-        X1i = normalize_batch(genX1.next())
-        X2i = normalize_batch(genX2.next())
+        X1i = normalize_batch(gen_X1.next())
+        X2i = normalize_batch(gen_X2.next())
 
         yield ({'secret': X1i, 'cover': X2i},
                {'hide_conv_f': X2i, 'revl_conv_f': X1i})  # Yield both images and their mutual label
 
 
 # Train data generator
-inputgenerator = generate_generator_multiple(generator=input_imgen, direc=TRAIN)
+input_generator = generate_generator_multiple(generator=input_image_gen, direc=TRAIN)
 
 # Validation data generator
-testgenerator = generate_generator_multiple(test_imgen, direc=VALIDATION)
-
-
-# Loss functions
-def custom_loss_1(secret, secret_pred):
-    # Compute L2 loss(MSE) for secret image
-    secret_mse = mean_squared_error(secret, secret_pred)
-    return secret_mse
-
-
-def custom_loss_2(cover, cover_pred):
-    # Compute L2 loss(MSE) for cover image
-    cover_mse = mean_squared_error(cover, cover_pred)
-    return cover_mse
+test_generator = generate_generator_multiple(test_image_gen, direc=VALIDATION)
 
 
 # Custom loss dictionary
@@ -112,96 +82,96 @@ lossWeights = {"hide_conv_f": 1.0, "revl_conv_f": 0.75}
 
 # Model architecture
 def steg_model(pretrain=False):
-    if (pretrain):
-        model = load_model(PRETRAINED, custom_objects={'custom_loss_1': custom_loss_1, 'custom_loss_2': custom_loss_2})
-        return model
+    if pretrain:
+        pretrained_model = load_model(PRETRAINED, custom_objects={'custom_loss_1': custom_loss_1, 'custom_loss_2': custom_loss_2})
+        return pretrained_model
 
     # Inputs
     secret = Input(shape=(224, 224, 3), name='secret')
     cover = Input(shape=(224, 224, 3), name='cover')
 
     # Prepare network - patches [3*3,4*4,5*5]
-    pconv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='prep_conv3x3_1')(secret)
-    pconv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='prep_conv3x3_2')(pconv_3x3)
-    pconv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='prep_conv3x3_3')(pconv_3x3)
-    pconv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='prep_conv3x3_4')(pconv_3x3)
+    prepare_conv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='prep_conv3x3_1')(secret)
+    prepare_conv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='prep_conv3x3_2')(prepare_conv_3x3)
+    prepare_conv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='prep_conv3x3_3')(prepare_conv_3x3)
+    prepare_conv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='prep_conv3x3_4')(prepare_conv_3x3)
 
-    pconv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='prep_conv4x4_1')(secret)
-    pconv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='prep_conv4x4_2')(pconv_4x4)
-    pconv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='prep_conv4x4_3')(pconv_4x4)
-    pconv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='prep_conv4x4_4')(pconv_4x4)
+    prepare_conv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='prep_conv4x4_1')(secret)
+    prepare_conv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='prep_conv4x4_2')(prepare_conv_4x4)
+    prepare_conv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='prep_conv4x4_3')(prepare_conv_4x4)
+    prepare_conv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='prep_conv4x4_4')(prepare_conv_4x4)
 
-    pconv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='prep_conv5x5_1')(secret)
-    pconv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='prep_conv5x5_2')(pconv_5x5)
-    pconv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='prep_conv5x5_3')(pconv_5x5)
-    pconv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='prep_conv5x5_4')(pconv_5x5)
+    prepare_conv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='prep_conv5x5_1')(secret)
+    prepare_conv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='prep_conv5x5_2')(prepare_conv_5x5)
+    prepare_conv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='prep_conv5x5_3')(prepare_conv_5x5)
+    prepare_conv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='prep_conv5x5_4')(prepare_conv_5x5)
 
-    pconcat_1 = concatenate([pconv_3x3, pconv_4x4, pconv_5x5], axis=3, name="prep_concat_1")
+    prepare_concat_1 = concatenate([prepare_conv_3x3, prepare_conv_4x4, prepare_conv_5x5], axis=3, name="prep_concat_1")
 
-    pconv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='prep_conv5x5_f')(pconcat_1)
-    pconv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='prep_conv4x4_f')(pconcat_1)
-    pconv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='prep_conv3x3_f')(pconcat_1)
+    prepare_conv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='prep_conv5x5_f')(prepare_concat_1)
+    prepare_conv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='prep_conv4x4_f')(prepare_concat_1)
+    prepare_conv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='prep_conv3x3_f')(prepare_concat_1)
 
-    pconcat_f1 = concatenate([pconv_5x5, pconv_4x4, pconv_3x3], axis=3, name="prep_concat_2")
+    prepare_prepare_concat_f1 = concatenate([prepare_conv_5x5, prepare_conv_4x4, prepare_conv_3x3], axis=3, name="prep_concat_2")
 
     # Hiding network - patches [3*3,4*4,5*5]
-    hconcat_h = concatenate([cover, pconcat_f1], axis=3, name="hide_concat_1")
+    hide_concat_h = concatenate([cover, prepare_prepare_concat_f1], axis=3, name="hide_concat_1")
 
-    hconv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='hide_conv3x3_1')(hconcat_h)
-    hconv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='hide_conv3x3_2')(hconv_3x3)
-    hconv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='hide_conv3x3_3')(hconv_3x3)
-    hconv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='hide_conv3x3_4')(hconv_3x3)
+    hide_conv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='hide_conv3x3_1')(hide_concat_h)
+    hide_conv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='hide_conv3x3_2')(hide_conv_3x3)
+    hide_conv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='hide_conv3x3_3')(hide_conv_3x3)
+    hide_conv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='hide_conv3x3_4')(hide_conv_3x3)
 
-    hconv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='hide_conv4x4_1')(hconcat_h)
-    hconv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='hide_conv4x4_2')(hconv_4x4)
-    hconv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='hide_conv4x4_3')(hconv_4x4)
-    hconv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='hide_conv4x4_4')(hconv_4x4)
+    hide_conv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='hide_conv4x4_1')(hide_concat_h)
+    hide_conv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='hide_conv4x4_2')(hide_conv_4x4)
+    hide_conv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='hide_conv4x4_3')(hide_conv_4x4)
+    hide_conv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='hide_conv4x4_4')(hide_conv_4x4)
 
-    hconv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='hide_conv5x5_1')(hconcat_h)
-    hconv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='hide_conv5x5_2')(hconv_5x5)
-    hconv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='hide_conv5x5_3')(hconv_5x5)
-    hconv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='hide_conv5x5_4')(hconv_5x5)
+    hide_conv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='hide_conv5x5_1')(hide_concat_h)
+    hide_conv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='hide_conv5x5_2')(hide_conv_5x5)
+    hide_conv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='hide_conv5x5_3')(hide_conv_5x5)
+    hide_conv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='hide_conv5x5_4')(hide_conv_5x5)
 
-    hconcat_1 = concatenate([hconv_3x3, hconv_4x4, hconv_5x5], axis=3, name="hide_concat_2")
+    hide_concat_1 = concatenate([hide_conv_3x3, hide_conv_4x4, hide_conv_5x5], axis=3, name="hide_concat_2")
 
-    hconv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='hide_conv5x5_f')(hconcat_1)
-    hconv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='hide_conv4x4_f')(hconcat_1)
-    hconv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='hide_conv3x3_f')(hconcat_1)
+    hide_conv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='hide_conv5x5_f')(hide_concat_1)
+    hide_conv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='hide_conv4x4_f')(hide_concat_1)
+    hide_conv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='hide_conv3x3_f')(hide_concat_1)
 
-    hconcat_f1 = concatenate([hconv_5x5, hconv_4x4, hconv_3x3], axis=3, name="hide_concat_3")
+    hide_concat_f1 = concatenate([hide_conv_5x5, hide_conv_4x4, hide_conv_3x3], axis=3, name="hide_concat_3")
 
-    cover_pred = Conv2D(3, kernel_size=1, padding="same", name='hide_conv_f')(hconcat_f1)
+    cover_predict = Conv2D(3, kernel_size=1, padding="same", name='hide_conv_f')(hide_concat_f1)
 
     # Noise layer
-    noise_ip = GaussianNoise(0.1)(cover_pred)
+    noise_ip = GaussianNoise(0.1)(cover_predict)
 
     # Reveal network - patches [3*3,4*4,5*5]
-    rconv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='revl_conv3x3_1')(noise_ip)
-    rconv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='revl_conv3x3_2')(rconv_3x3)
-    rconv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='revl_conv3x3_3')(rconv_3x3)
-    rconv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='revl_conv3x3_4')(rconv_3x3)
+    reveal_conv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='revl_conv3x3_1')(noise_ip)
+    reveal_conv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='revl_conv3x3_2')(reveal_conv_3x3)
+    reveal_conv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='revl_conv3x3_3')(reveal_conv_3x3)
+    reveal_conv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='revl_conv3x3_4')(reveal_conv_3x3)
 
-    rconv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='revl_conv4x4_1')(noise_ip)
-    rconv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='revl_conv4x4_2')(rconv_4x4)
-    rconv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='revl_conv4x4_3')(rconv_4x4)
-    rconv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='revl_conv4x4_4')(rconv_4x4)
+    reveal_conv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='revl_conv4x4_1')(noise_ip)
+    reveal_conv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='revl_conv4x4_2')(reveal_conv_4x4)
+    reveal_conv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='revl_conv4x4_3')(reveal_conv_4x4)
+    reveal_conv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='revl_conv4x4_4')(reveal_conv_4x4)
 
-    rconv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='revl_conv5x5_1')(noise_ip)
-    rconv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='revl_conv5x5_2')(rconv_5x5)
-    rconv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='revl_conv5x5_3')(rconv_5x5)
-    rconv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='revl_conv5x5_4')(rconv_5x5)
+    reveal_conv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='revl_conv5x5_1')(noise_ip)
+    reveal_conv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='revl_conv5x5_2')(reveal_conv_5x5)
+    reveal_conv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='revl_conv5x5_3')(reveal_conv_5x5)
+    reveal_conv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='revl_conv5x5_4')(reveal_conv_5x5)
 
-    rconcat_1 = concatenate([rconv_3x3, rconv_4x4, rconv_5x5], axis=3, name="revl_concat_1")
+    reveal_concat_1 = concatenate([reveal_conv_3x3, reveal_conv_4x4, reveal_conv_5x5], axis=3, name="revl_concat_1")
 
-    rconv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='revl_conv5x5_f')(rconcat_1)
-    rconv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='revl_conv4x4_f')(rconcat_1)
-    rconv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='revl_conv3x3_f')(rconcat_1)
+    reveal_conv_5x5 = Conv2D(50, kernel_size=5, padding="same", activation='relu', name='revl_conv5x5_f')(reveal_concat_1)
+    reveal_conv_4x4 = Conv2D(50, kernel_size=4, padding="same", activation='relu', name='revl_conv4x4_f')(reveal_concat_1)
+    reveal_conv_3x3 = Conv2D(50, kernel_size=3, padding="same", activation='relu', name='revl_conv3x3_f')(reveal_concat_1)
 
-    rconcat_f1 = concatenate([rconv_5x5, rconv_4x4, rconv_3x3], axis=3, name="revl_concat_2")
+    reveal_concat_f1 = concatenate([reveal_conv_5x5, reveal_conv_4x4, reveal_conv_3x3], axis=3, name="revl_concat_2")
 
-    secret_pred = Conv2D(3, kernel_size=1, padding="same", name='revl_conv_f')(rconcat_f1)
+    secret_predict = Conv2D(3, kernel_size=1, padding="same", name='revl_conv_f')(reveal_concat_f1)
 
-    model = Model(inputs=[secret, cover], outputs=[cover_pred, secret_pred])
+    model = Model(inputs=[secret, cover], outputs=[cover_predict, secret_predict])
 
     # Multi GPU training  (Uncomment the following line)
     # model = multi_gpu_model(model, gpus=2)
@@ -260,31 +230,31 @@ class TensorBoardImage(Callback):
 
     def on_epoch_end(self, epoch, logs={}):
         # Load random test images
-        secretin = test_images[np.random.choice(len(test_images), size=4, replace=False)]
-        coverin = test_images[np.random.choice(len(test_images), size=4, replace=False)]
+        secret_in = test_images[np.random.choice(len(test_images), size=4, replace=False)]
+        cover_in = test_images[np.random.choice(len(test_images), size=4, replace=False)]
 
         # Predict on batch
-        coverout, secretout = model.predict([normalize_batch(secretin), normalize_batch(coverin)])
+        cover_out, secret_out = model.predict([normalize_batch(secret_in), normalize_batch(cover_in)])
 
-        # Postprocess output cover image
-        coverout = denormalize_batch(coverout)
-        coverout = np.squeeze(coverout) * 255.0
-        coverout = np.uint8(coverout)
+        # Post process output cover image
+        cover_out = denormalize_batch(cover_out)
+        cover_out = np.squeeze(cover_out) * 255.0
+        cover_out = np.uint8(cover_out)
 
-        # Postprocess output secret image
-        secretout = denormalize_batch(secretout)
-        secretout = np.squeeze(secretout) * 255.0
-        secretout = np.uint8(secretout)
+        # Post process output secret image
+        secret_out = denormalize_batch(secret_out)
+        secret_out = np.squeeze(secret_out) * 255.0
+        secret_out = np.uint8(secret_out)
 
         # Convert images to UINT8 format (0-255)
-        coverin = np.uint8(np.squeeze(coverin * 255.0))
-        secretin = np.uint8(np.squeeze(secretin * 255.0))
+        cover_in = np.uint8(np.squeeze(cover_in * 255.0))
+        secret_in = np.uint8(np.squeeze(secret_in * 255.0))
 
         # Log image summary
-        log_images("cover_in", coverin, epoch)
-        log_images("secret_in", secretin, epoch)
-        log_images("cover_out", coverout, epoch)
-        log_images("secret_out", secretout, epoch)
+        log_images("cover_in", cover_in, epoch)
+        log_images("secret_in", secret_in, epoch)
+        log_images("cover_out", cover_out, epoch)
+        log_images("secret_out", secret_out, epoch)
 
         return
 
@@ -302,9 +272,9 @@ reduce_lr = ReduceLROnPlateau(factor=0.5, patience=3, min_lr=0.000001, verbose=1
 callbacks_list = [checkpoint, tensorboard, image_summary, reduce_lr]
 
 # Train the model
-model.fit_generator(inputgenerator, epochs=100,
+model.fit_generator(input_generator, epochs=100,
                     steps_per_epoch=TRAIN_NUM // BATCH_SIZE,
-                    validation_data=testgenerator,
+                    validation_data=test_generator,
                     validation_steps=VAL_NUM // BATCH_SIZE,
                     use_multiprocessing=True,
                     callbacks=callbacks_list)
