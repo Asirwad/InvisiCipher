@@ -27,10 +27,10 @@ def update_progress(current_frame, total_frames):
 
 
 # Open the input video
-vidcap = cv2.VideoCapture(args['input_video'])
+vid_cap = cv2.VideoCapture(args['input_video'])
 
 # Total input video frames
-num_frames = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
+num_frames = int(vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
 print("Total frames in input video:", num_frames)
 
 # Initialize the video writer
@@ -41,8 +41,8 @@ enhanced_video = cv2.VideoWriter('results/enhanced_secret_300.avi', cv2.VideoWri
 frames = []
 
 # Load the frames to buffer
-while vidcap.isOpened():
-    success, image = vidcap.read()
+while vid_cap.isOpened():
+    success, image = vid_cap.read()
     if success:
         frames.append(image)
     else:
@@ -54,9 +54,9 @@ start_frame = 5
 # Enhance and save video frame-by-frame
 for i in range(start_frame, len(frames) - (start_frame + 1)):
     output = frames[i]
-    if args["denoise"] == True:
+    if args["denoise"]:
         output = cv2.fastNlMeansDenoisingColoredMulti(frames, i, 11)
-    if args["sharpen"] == True:
+    if args["sharpen"]:
         output = np.array(Image.fromarray(output).filter(ImageFilter.DETAIL))
     enhanced_video.write(output)
     update_progress(i, num_frames - (start_frame + 1))
