@@ -9,6 +9,7 @@ from app.models.encryption import blowfish
 from app.models.bit_plane import bit_plane_enhancer
 from app.models.DEEP_STEGO.hide_image import hide_image
 from app.models.DEEP_STEGO.reveal_image import reveal_image
+from app.models.ESRGAN.upscale import upscale
 
 """ Bit-plane slicing """
 
@@ -37,6 +38,12 @@ print("input the steg image filename")
 steg_filename = filedialog.askopenfilename(title="Select Image", filetypes=(
     ("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
 reveal_image(steg_filename)
+
+""" UP-SCALING """
+print("input the low res image filename")
+low_res_filename = filedialog.askopenfilename(title="Select Image", filetypes=(
+    ("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
+upscale(low_res_filename)
 
 
 print("1. AES")
