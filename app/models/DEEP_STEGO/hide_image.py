@@ -13,7 +13,7 @@ def hide_image(cover_image_filepath, secret_image_filepath):
     cover_image_in = Image.open(cover_image_filepath).convert('RGB')
 
     # Resize if image to 224px*224px
-    if secret_image_in.size != (224,224):
+    if secret_image_in.size != (224, 224):
         secret_image_in = secret_image_in.resize((224, 224))
         print("secret_image was resized to 224px * 224px")
     if cover_image_in.size != (224, 224):
@@ -33,12 +33,3 @@ def hide_image(cover_image_filepath, secret_image_filepath):
     print("Saved steg image to steg_image.png")
 
     return
-
-
-print("input the cover image filename")
-cover_filename = filedialog.askopenfilename(title="Select Image", filetypes=(
-("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
-print("input the secret image filename")
-secret_filename = filedialog.askopenfilename(title="Select Image", filetypes=(
-("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
-hide_image(cover_filename, secret_filename)
