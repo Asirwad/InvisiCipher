@@ -7,6 +7,8 @@ from app.models.bit_plane.image import ImageProcessor
 from app.models.encryption.chaos import logistic_map_chaos, aes_chaos
 from app.models.encryption import blowfish
 from app.models.bit_plane import bit_plane_enhancer
+from app.models.DEEP_STEGO.hide_image import hide_image
+from app.models.DEEP_STEGO.reveal_image import reveal_image
 
 """ Bit-plane slicing """
 
@@ -21,6 +23,21 @@ output_filename = "output_sliced.png"
 plane_image_pil = Image.fromarray(np.uint8(plane_image * 255))
 plane_image_pil.save(output_filename)
 print(f"Sliced output saved to {output_filename}")
+
+""" DEEP STEGANO """
+print("input the cover image filename")
+cover_filename = filedialog.askopenfilename(title="Select Image", filetypes=(
+("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
+print("input the secret image filename")
+secret_filename = filedialog.askopenfilename(title="Select Image", filetypes=(
+("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
+hide_image(cover_filename, secret_filename)
+
+print("input the steg image filename")
+steg_filename = filedialog.askopenfilename(title="Select Image", filetypes=(
+    ("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
+reveal_image(steg_filename)
+
 
 print("1. AES")
 print("2. logistic map encryption")
