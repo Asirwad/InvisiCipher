@@ -35,7 +35,7 @@ class ResidualDenseBlock_5C(nn.Module):
 
 
 class RRDB(nn.Module):
-    '''Residual in Residual Dense Block'''
+    """Residual in Residual Dense Block"""
 
     def __init__(self, nf, gc=32):
         super(RRDB, self).__init__()
