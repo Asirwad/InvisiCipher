@@ -61,3 +61,4 @@ def decrypt(encrypted_image_path, key):
     except ValueError:
         print("Wrong Key ):")
         return
+

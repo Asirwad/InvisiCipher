@@ -9,6 +9,7 @@ from app.models.DEEP_STEGO.reveal_image import reveal_image
 from app.models.ESRGAN.upscale_image import upscale_image
 
 """ DEEP STEGANO """
+print("Image hiding")
 print("input the cover image filename")
 cover_filename = filedialog.askopenfilename(title="Select Image", filetypes=(
 ("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
