@@ -7,7 +7,7 @@ from app.models.DEEP_STEGO.Utils.preprocessing import normalize_batch, denormali
 
 
 def hide_image(cover_image_filepath, secret_image_filepath):
-    model = load_model("./models/hide.h5")
+    model = load_model("C:/Users/asirw/PycharmProjects/InvisiCipher/app/models/DEEP_STEGO/models/hide.h5")
 
     secret_image_in = Image.open(secret_image_filepath).convert('RGB')
     cover_image_in = Image.open(cover_image_filepath).convert('RGB')
@@ -29,7 +29,16 @@ def hide_image(cover_image_filepath, secret_image_filepath):
     steg_image_out = np.squeeze(steg_image_out) * 255.0
     steg_image_out = np.uint8(steg_image_out)
 
-    imageio.imsave('test/steg_image.png', steg_image_out)
+    imageio.imsave('C:/Users/asirw/PycharmProjects/InvisiCipher/app/steg_image.png', steg_image_out)
     print("Saved steg image to steg_image.png")
 
     return
+
+
+print("input the cover image filename")
+cover_filename = filedialog.askopenfilename(title="Select Image", filetypes=(
+("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
+print("input the secret image filename")
+secret_filename = filedialog.askopenfilename(title="Select Image", filetypes=(
+("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
+hide_image(cover_filename, secret_filename)

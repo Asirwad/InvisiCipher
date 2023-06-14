@@ -7,7 +7,7 @@ from app.models.DEEP_STEGO.Utils.preprocessing import normalize_batch, denormali
 
 
 def reveal_image(stego_image_filepath):
-    model = load_model("./models/reveal.h5", compile=False)
+    model = load_model("C:/Users/asirw/PycharmProjects/InvisiCipher/app/models/DEEP_STEGO/models/reveal.h5", compile=False)
 
     stego_image = Image.open(stego_image_filepath).convert('RGB')
 
@@ -24,9 +24,15 @@ def reveal_image(stego_image_filepath):
     secret_image_out = np.squeeze(secret_image_out) * 255.0
     secret_image_out = np.uint8(secret_image_out)
 
-    imageio.imsave("test/secret_out.png", secret_image_out)
+    imageio.imsave("C:/Users/asirw/PycharmProjects/InvisiCipher/app/secret_out.png", secret_image_out)
     print("Saved revealed image to secret_out.png")
 
     return
+
+
+print("input the steg image filename")
+steg_filename = filedialog.askopenfilename(title="Select Image", filetypes=(
+    ("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
+reveal_image(steg_filename)
 
 

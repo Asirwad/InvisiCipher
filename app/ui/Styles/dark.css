@@ -1,0 +1,53 @@
+QTreeView {
+    background-color: #1e1e1e;
+    color: #f0f0f0;
+    border: none;
+    padding: 30px;
+}
+
+QTreeViewitem {
+    height: 30px;
+    padding-left: 10px;
+    border: none;
+}
+
+QTreeView::item:hover {
+    background-color: blue;
+}
+
+QTreeView::item:selected {
+    background-color: #3e3e3e;
+}
+
+QTreeView::item:selected:active {
+    background-color: green;
+}
+
+QTreeView::branch {
+    background-color: #1e1e1e;
+}
+
+QTreeView::branch:hover {
+   background-color: #2e2e2e;
+}
+
+QTreeView::branch:selected {
+    background-color: #3e3e3e;
+}
+
+QTreeView::branch:selected:active {
+    background-color: #4e44e;
+}
+
+QTreeView::indicator {
+    width: 0px;
+    height: 0px;
+}
+
+QTreeView::indicator:closed {
+    image: url(icons/arrow-right.svg);
+}
+
+QTreeView::indicator:open {
+    image: url(icons/arrow-down.svg);
+}
