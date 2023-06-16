@@ -1,12 +1,12 @@
 from tkinter import filedialog
-import numpy as np
-from PIL import Image
 
-from app.models.encryption.chaos import logistic_map_chaos, aes_chaos
+from app.models.encryption.chaos import logistic_map_chaos
 from app.models.encryption import blowfish
 from app.models.DEEP_STEGO.hide_image import hide_image
 from app.models.DEEP_STEGO.reveal_image import reveal_image
 from app.models.ESRGAN.upscale_image import upscale_image
+
+print("InvisiCipher CLI")
 
 """ DEEP STEGANO """
 print("Image hiding")

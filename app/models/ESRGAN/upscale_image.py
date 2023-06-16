@@ -8,7 +8,7 @@ from app.models.ESRGAN import RRDBNet_arch as arch
 
 def upscale_image(image_filepath):
     os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:400"
-    model_path = 'models/RRDB_ESRGAN_x4.pth'
+    model_path = 'C:/Users/asirw/PycharmProjects/InvisiCipher/app/models/ESRGAN/models/RRDB_ESRGAN_x4.pth'
     device = torch.device('cuda')
 
     model = arch.RRDBNet(3, 3, 64, 23, gc=32)
@@ -34,7 +34,4 @@ def upscale_image(image_filepath):
     return
 
 
-print("input the low res image filename")
-low_res_filename = filedialog.askopenfilename(title="Select Image", filetypes=(
-    ("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
-upscale_image(low_res_filename)
+

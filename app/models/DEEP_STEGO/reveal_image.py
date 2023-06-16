@@ -30,9 +30,6 @@ def reveal_image(stego_image_filepath):
     return
 
 
-print("input the steg image filename")
-steg_filename = filedialog.askopenfilename(title="Select Image", filetypes=(
-    ("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
-reveal_image(steg_filename)
+
 
 

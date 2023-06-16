@@ -35,10 +35,3 @@ def hide_image(cover_image_filepath, secret_image_filepath):
     return
 
 
-print("input the cover image filename")
-cover_filename = filedialog.askopenfilename(title="Select Image", filetypes=(
-("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
-print("input the secret image filename")
-secret_filename = filedialog.askopenfilename(title="Select Image", filetypes=(
-("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
-hide_image(cover_filename, secret_filename)
