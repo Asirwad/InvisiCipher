@@ -69,7 +69,13 @@ This project is licensed under the [MIT License](LICENSE).
 
 We would like to acknowledge the following resources and libraries used in this project:
 
-- TensorFlow: [https://www.tensorflow.org/](https://www.tensorflow.org/)
-- PyTorch: [https://pytorch.org/](https://pytorch.org/)
+- <img src="https://www.tensorflow.org/images/tf_logo_social.png" alt="TensorFlow" width="80"> TensorFlow: [https://www.tensorflow.org/](https://www.tensorflow.org/)
+- <img src=""
+ alt="PyTorch" width="40"> PyTorch: [https://pytorch.org/](https://pytorch.org/)
+![image](https://github.com/Asirwad/InvisiCipher/assets/85600836/d7006342-eb74-46e0-aa89-5a65c5311db3)
+
+## Contact
+
+For any questions or inquiries, please contact us at [asirwadsali@gmail.com](mailto:asirwadsali@gmail.com).
 
 </div>
