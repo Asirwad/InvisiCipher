@@ -1,5 +1,5 @@
 <h1 align="center">
-  InvisiCipher : Deep Learning-Based Steganography with Chaotic Encryption and
+  InvisiCipher : Deep Learning-Based image Steganography with Chaotic Encryption and
 Enhanced Super Resolution
 </h1>
 
