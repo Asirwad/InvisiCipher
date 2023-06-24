@@ -1,0 +1,42 @@
+QMainWindow{
+    color: white;
+    background-color: #202123;
+}
+QPushButton {
+  position: relative;
+  padding: 10px 20px;
+  border-radius: 7px;
+  border: 1px solid #9342ff;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: "SF Pro", Arial, sans-serif;
+  letter-spacing: 1px;
+  background: transparent;
+  color: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 0 0 0 #ffffff;
+}
+QPushButton:hover {
+  background: #9342ff;
+  box-shadow: 0 0 30px 5px rgba(0, 142, 236, 0.815);
+}
+#logout_button {
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+#logout_button:hover {
+    background-color: #e81123;
+    color: #ffffff;
+    border: 0px;
+}
+
+#side_navigation{
+    background-color: #202123;
+    padding: 0px 0px;
+}
+#main_content {
+    background-color: #444654;
+    padding: 0px 0px;
+}

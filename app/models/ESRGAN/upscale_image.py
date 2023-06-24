@@ -1,4 +1,3 @@
-from tkinter import filedialog
 import cv2
 import numpy as np
 import torch
@@ -28,10 +27,12 @@ def upscale_image(image_filepath):
         image_high_res = model(image_low_res).data.squeeze().float().cpu().clamp_(0, 1).numpy()
     image_high_res = np.transpose(image_high_res[[2, 1, 0], :, :], (1, 2, 0))
     image_high_res = (image_high_res * 255.0).round()
-    cv2.imwrite('upscaled.png', image_high_res)
-    print("image saved as upscaled.png")
 
-    return
+    output_filepath = os.path.abspath('upscaled.png')
+    cv2.imwrite(output_filepath, image_high_res)
+    print("image saved as: ", output_filepath)
+
+    return output_filepath
 
 
 
