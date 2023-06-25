@@ -13,13 +13,13 @@ Enhanced Super Resolution
 
 ## Overview
 
-Welcome to our Steganography and Super Resolution project! This project combines the power of steganography techniques and super resolution using deep learning models. Our goal is to hide a secret image within a cover image using advanced convolutional neural networks (CNNs) and then enhance the quality of the hidden image using an Enhanced Super Resolution Generative Adversarial Network (ESRGAN). We also provide an option to encrypt the steg image using various chaos encryption algorithms for added security.
+Welcome to our Steganography and Super Resolution project! This project combines the power of steganography techniques and super-resolution using deep learning models. Our goal is to hide a secret image within a cover image using advanced convolutional neural networks (CNNs) and then enhance the quality of the hidden image using an Enhanced Super Resolution Generative Adversarial Network (ESRGAN). We also provide an option to encrypt the steg image using various chaos encryption algorithms for added security.
 
 ## Features
 
 ✨ **Interactive Hiding**: Utilize our intuitive hide network powered by CNNs to embed secret images within cover images effortlessly.
 
-🔒 **Secure Encryption**: Choose from multiple chaos encryption algorithms such as RSA, Blowfish, or logistic map to encrypt your steg image and protect your secrets.
+🔒 **Secure Encryption**: Choose from multiple chaos encryption algorithms such as EAS, Blowfish to encrypt your steg image and protect your secrets.
 
 🌟 **Enhanced Super Resolution**: Witness the magic of our ESRGAN model as it enhances the resolution and quality of the hidden image, revealing every detail.
 
