@@ -1,10 +1,10 @@
 from tkinter import filedialog
 
-from app.models.encryption.chaos import logistic_map_chaos
 from app.models.encryption import blowfish
 from app.models.DEEP_STEGO.hide_image import hide_image
 from app.models.DEEP_STEGO.reveal_image import reveal_image
 from app.models.ESRGAN.upscale_image import upscale_image
+from app.models.encryption import aes as aes_chaos
 
 print("InvisiCipher CLI")
 
@@ -22,8 +22,7 @@ print("image hidden successfully\n\n")
 
 
 print("1. AES")
-print("2. logistic map encryption")
-print("3. Blowfish")
+print("2. Blowfish")
 enc_choice = int(input("What type of encryption do you want? :"))
 print("Your choice is : ", enc_choice)
 
@@ -41,21 +40,8 @@ if enc_choice == 1:
     ("All files", "*.*"), ("JPEG files", "*.jpg;*.jpeg"), ("PNG files", "*.png")))
     aes_chaos.decrypt(filename, key)
 
+
 elif enc_choice == 2:
-    # logistic map encryption
-    key = 0.1
-    filename = filedialog.askopenfilename(title="Select Image", filetypes=(
-    ("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
-    logistic_map_chaos.encrypt(filename, key)
-    print("Encrypted output saved to output_encrypted.png")
-
-    # logistic map decryption
-    filename = filedialog.askopenfilename(title="Select Image", filetypes=(
-    ("PNG files", "*.png"), ("JPEG files", "*.jpg;*.jpeg"), ("All files", "*.*")))
-    logistic_map_chaos.decrypt(filename, key)
-    print("Encrypted output saved to output_decrypted.png")
-
-elif enc_choice == 3:
     print("Blowfish Encryption")
     # Blowfish Encryption
     key = input("Enter your secret key : ")

@@ -9,7 +9,7 @@ QPushButton {
   border: 1px solid #9342ff;
   font-size: 12px;
   font-weight: 500;
-  font-family: "SF Pro", Arial, sans-serif;
+  font-family: "Railway", Arial, sans-serif;
   letter-spacing: 1px;
   background: transparent;
   color: #ffffff;
@@ -39,4 +39,5 @@ QPushButton:hover {
 #main_content {
     background-color: #444654;
     padding: 0px 0px;
+    border-radius: 12px;
 }

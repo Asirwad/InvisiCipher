@@ -2,10 +2,13 @@ import os
 import sys
 
 from PyQt5.QtCore import QFile, QTextStream
-from PyQt5.QtGui import QIcon, QPixmap, QFont
+from PyQt5.QtGui import QIcon, QPixmap, QFont, QColor, QFontDatabase
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, \
     QLabel, QMessageBox, QProgressBar, QFileDialog, QSizePolicy, QLayout, QDialog
 from PyQt5.QtCore import Qt
+from app.ui.components.backgroundwidget import BackgroundWidget
+from app.models.DEEP_STEGO.hide_image import hide_image
+from app.models.DEEP_STEGO.reveal_image import reveal_image
 from app.models.ESRGAN import RRDBNet_arch as arch
 import torch
 import cv2
@@ -15,30 +18,57 @@ import numpy as np
 class MainAppWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        # Set window properties
+        # vars
+        self.container_image_filepath = None
+        self.secret_out_display_label = None
+        self.container_display_label = None
+        self.download_revealed_secret_image_button = None
+        self.download_steg_button = None
+        self.secret_image_filepath = None
+        self.cover_image_filepath = None
+        self.steg_display_label = None
+        self.secret_display_label = None
+        self.cover_display_label = None
         self.low_res_image_text_label = None
         self.image_label = None
         self.low_res_image_filepath = None
-        self.download_button = None
+        self.download_HR_button = None
+
+        # Set window properties
         self.setWindowTitle("InvisiCipher")
         self.setGeometry(200, 200, 1400, 800)
         self.setWindowIcon(QIcon("icon.ico"))
         self.setStyleSheet("background-color: #2b2b2b;")
         self.setFixedSize(self.size())
+        # self.setWindowFlags(Qt.FramelessWindowHint)
 
         # Set up the main window layout
         main_layout = QHBoxLayout()
 
         # Create the side navigation bar
-        side_navigation = QWidget()
+        side_navigation = BackgroundWidget()
+        side_navigation.set_background_image("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/components_backgrounds/sidebar_bg.jpg")
         side_navigation.setObjectName("side_navigation")
         side_navigation.setFixedWidth(200)
         side_layout = QVBoxLayout()
 
+        # label for logo
+        logo_label = QLabel()
+        logo_path = "C:/Users/asirw/PycharmProjects/InvisiCipher/logo.png"
+        logo_pixmap = QPixmap(logo_path).scaled(50, 50, Qt.KeepAspectRatio)
+        logo_label.setPixmap(logo_pixmap)
+        logo_label.setAlignment(Qt.AlignCenter)
+
+        # label for logo name
+        name_label = QLabel()
+        name_label.setText("<h2>InvisiCipher</h2><br><br><br><br><br><br><br><br><br>")
+        name_label.setStyleSheet("color: #ffffff;")
+        name_label.setAlignment(Qt.AlignCenter)
+
         # Create buttons for each option
         encryption_button = QPushButton("Encryption")
         decryption_button = QPushButton("Decryption")
-        image_hiding_button = QPushButton("Image Hiding")
+        image_hiding_button = QPushButton("Image Hide")
         image_reveal_button = QPushButton("Image Reveal")
         super_resolution_button = QPushButton("Super Resolution")
 
@@ -50,9 +80,11 @@ class MainAppWindow(QMainWindow):
         super_resolution_button.clicked.connect(self.show_super_resolution_page)
 
         # Add buttons to the side navigation layout
+        side_layout.addWidget(logo_label)
+        side_layout.addWidget(name_label)
+        side_layout.addWidget(image_hiding_button)
         side_layout.addWidget(encryption_button)
         side_layout.addWidget(decryption_button)
-        side_layout.addWidget(image_hiding_button)
         side_layout.addWidget(image_reveal_button)
         side_layout.addWidget(super_resolution_button)
 
@@ -67,9 +99,10 @@ class MainAppWindow(QMainWindow):
         side_navigation.setLayout(side_layout)
 
         # Create the main content area
-        main_content = QWidget()
+        main_content = BackgroundWidget()
         main_content.setObjectName("main_content")
         self.main_layout = QVBoxLayout()
+        main_content.set_background_image("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/components_backgrounds/main_window_bg.png")
         main_content.setLayout(self.main_layout)
 
         # Add the side navigation and main content to the main window layout
@@ -125,79 +158,224 @@ class MainAppWindow(QMainWindow):
         self.main_layout.addWidget(page_widget)
 
     def show_image_hiding_page(self):
+        self.secret_image_filepath = None
+        self.cover_image_filepath = None
+        # Clear the main window layout
         self.clear_main_layout()
 
-        title_label = QLabel("Hide Page")
-        input_label = QLabel("Select the cover image:")
-        cover_image_button = QPushButton("Browse")
-        input_label_2 = QLabel("Select the secret image:")
-        secret_image_button = QPushButton("Browse")
+        # Add content to the super resolution page
+        title_label = QLabel("<H2>STEGO CNN : Steganography Hide</H2>")
+        title_label.setStyleSheet("font-size: 24px; color: #ffffff;")
+        title_label.setAlignment(Qt.AlignTop)
+        self.main_layout.addWidget(title_label)
+
+        # STEGO CNN model path label
+        model_path_label = QLabel("<h5>Model Path: InvisiCipher/app/models/DEEP_STEGO/models/hide.h5</h5>")
+        model_path_label.setStyleSheet("font-size: 16px; color: #c6c6c6;")
+        model_path_label.setAlignment(Qt.AlignTop)
+        self.main_layout.addWidget(model_path_label)
+
+        # GPU Info
+        gpu_info_label = QLabel("<b><ul><li>Device: GPU:0 with 1654 MB memory</li><li>NVIDIA GeForce RTX 3050 Laptop GPU</li><li>Compute capability: 8.6</li><li>Loaded cuDNN version 8302</li></ul></b>")
+        gpu_info_label.setStyleSheet("font-size: 13px; color: #fae69e;")
+        gpu_info_label.setAlignment(Qt.AlignTop)
+        self.main_layout.addWidget(gpu_info_label)
+
+        # label layout
+        label_layout = QHBoxLayout()
+        cover_text_label = QLabel("Select cover image:")
+        cover_text_label.setAlignment(Qt.AlignCenter)
+        cover_text_label.setStyleSheet("font-size: 16px; color: #c6c6c6; margin-bottom: 10px; font-weight: bold;")
+        label_layout.addWidget(cover_text_label)
+
+        secret_text_label = QLabel("Select secret image:")
+        secret_text_label.setAlignment(Qt.AlignCenter)
+        secret_text_label.setStyleSheet("font-size: 16px; color: #c6c6c6; margin-bottom: 10px; font-weight: bold;")
+        label_layout.addWidget(secret_text_label)
+
+        steg_text_label = QLabel("Produced steg image:")
+        steg_text_label.setAlignment(Qt.AlignCenter)
+        steg_text_label.setStyleSheet("font-size: 16px; color: #00ff00; margin-bottom: 10px; font-weight: bold;")
+        label_layout.addWidget(steg_text_label)
+
+        label_layout_widget = QWidget()
+        label_layout_widget.setLayout(label_layout)
+        self.main_layout.addWidget(label_layout_widget)
+
+        # Image  display layout
+        image_display_layout = QHBoxLayout()
+        self.cover_display_label = QLabel()
+        self.cover_display_label.setAlignment(Qt.AlignCenter)
+        pixmap = QPixmap("assets/dummy_images/cover_image_dummy.png")
+        self.cover_display_label.setPixmap(pixmap.scaled(256, 256, Qt.KeepAspectRatio))
+        image_display_layout.addWidget(self.cover_display_label)
+
+        self.secret_display_label = QLabel()
+        self.secret_display_label.setAlignment(Qt.AlignCenter)
+        pixmap = QPixmap("assets/dummy_images/secret_image_dummy.png")
+        self.secret_display_label.setPixmap(pixmap.scaled(256, 256, Qt.KeepAspectRatio))
+        image_display_layout.addWidget(self.secret_display_label)
+
+        self.steg_display_label = QLabel()
+        self.steg_display_label.setAlignment(Qt.AlignCenter)
+        pixmap = QPixmap("assets/dummy_images/steg_image_dummy.png")
+        self.steg_display_label.setPixmap(pixmap.scaled(256, 256, Qt.KeepAspectRatio))
+        image_display_layout.addWidget(self.steg_display_label)
+
+        image_display_layout_widget = QWidget()
+        image_display_layout_widget.setLayout(image_display_layout)
+        self.main_layout.addWidget(image_display_layout_widget)
+
+        # button layout
+        button_layout = QHBoxLayout()
+        clear_button = QPushButton("Clear")
+        clear_button.clicked.connect(lambda: self.show_image_hiding_page())
+        button_layout.addWidget(clear_button)
+
+        browse_cover_button = QPushButton("Browse cover image")
+        browse_cover_button.clicked.connect(lambda: self.select_cover_image(self.cover_display_label))
+        button_layout.addWidget(browse_cover_button)
+
+        browse_secret_button = QPushButton("Browse secret image")
+        browse_secret_button.clicked.connect(lambda: self.select_secret_image(self.secret_display_label))
+        button_layout.addWidget(browse_secret_button)
+
         hide_button = QPushButton("Hide")
+        hide_button.clicked.connect(lambda: self.perform_hide(self.cover_image_filepath, self.secret_image_filepath))
+        button_layout.addWidget(hide_button)
 
-        layout = QVBoxLayout()
-        layout.addWidget(title_label)
-        layout.addWidget(input_label)
-        layout.addWidget(cover_image_button)
-        layout.addWidget(input_label_2)
-        layout.addWidget(secret_image_button)
-        layout.addWidget(hide_button)
+        self.download_steg_button = QPushButton("Download steg image")
+        self.download_steg_button.setEnabled(False)
+        self.download_steg_button.clicked.connect(lambda: self.download_image())
+        button_layout.addWidget(self.download_steg_button)
 
-        page_widget = QWidget()
-        page_widget.setLayout(layout)
-
-        self.main_layout.addWidget(page_widget)
+        button_layout_widget = QWidget()
+        button_layout_widget.setLayout(button_layout)
+        self.main_layout.addWidget(button_layout_widget)
 
     def show_reveal_page(self):
         self.clear_main_layout()
 
-        title_label = QLabel("Reveal Page")
-        input_label = QLabel("Select the steg image:")
-        steg_image_button = QPushButton("Browse")
+        # Add content to the super resolution page
+        title_label = QLabel("<H2>STEGO CNN : Steganography Reveal</H2>")
+        title_label.setStyleSheet("font-size: 24px; color: #ffffff;")
+        title_label.setAlignment(Qt.AlignTop)
+        self.main_layout.addWidget(title_label)
+
+        # STEGO CNN model path label
+        model_path_label = QLabel("<h5>Model Path: InvisiCipher/app/models/DEEP_STEGO/models/reveal.h5</h5>")
+        model_path_label.setStyleSheet("font-size: 16px; color: #c6c6c6;")
+        model_path_label.setAlignment(Qt.AlignTop)
+        self.main_layout.addWidget(model_path_label)
+
+        # GPU Info
+        gpu_info_label = QLabel("<b><ul><li>Device: GPU:0 with 1654 MB memory</li><li>NVIDIA GeForce RTX 3050 Laptop GPU</li><li>Compute capability: 8.6</li><li>Loaded cuDNN version 8302</li></ul></b>")
+        gpu_info_label.setStyleSheet("font-size: 13px; color: #fae69e;")
+        gpu_info_label.setAlignment(Qt.AlignTop)
+        self.main_layout.addWidget(gpu_info_label)
+
+        # image text layout
+        image_text_layout = QHBoxLayout()
+        container_text_label = QLabel("Select steg image:")
+        container_text_label.setAlignment(Qt.AlignCenter)
+        container_text_label.setStyleSheet("font-size: 16px; color: #c6c6c6; margin-bottom: 10px; font-weight: bold;")
+        image_text_layout.addWidget(container_text_label)
+
+        secret_out_text_label = QLabel("Revealed secret image:")
+        secret_out_text_label.setAlignment(Qt.AlignCenter)
+        secret_out_text_label.setStyleSheet("font-size: 16px; color: #00ff00; margin-bottom: 10px; font-weight: bold;")
+        image_text_layout.addWidget(secret_out_text_label)
+
+        image_text_layout_widget = QWidget()
+        image_text_layout_widget.setLayout(image_text_layout)
+        self.main_layout.addWidget(image_text_layout_widget)
+        
+        # Image display layout
+        image_layout = QHBoxLayout()
+        self.container_display_label = QLabel()
+        self.container_display_label.setAlignment(Qt.AlignCenter)
+        pixmap = QPixmap("assets/dummy_images/steg_image_dummy.png")
+        self.container_display_label.setPixmap(pixmap.scaled(256, 256, Qt.KeepAspectRatio))
+        image_layout.addWidget(self.container_display_label)
+        
+        self.secret_out_display_label = QLabel()
+        self.secret_out_display_label.setAlignment(Qt.AlignCenter)
+        pixmap = QPixmap("assets/dummy_images/secret_image_dummy.png")
+        self.secret_out_display_label.setPixmap(pixmap.scaled(256, 256, Qt.KeepAspectRatio))
+        image_layout.addWidget(self.secret_out_display_label)
+
+        image_layout_widget = QWidget()
+        image_layout_widget.setLayout(image_layout)
+        self.main_layout.addWidget(image_layout_widget)
+
+        # button layout
+        button_layout = QHBoxLayout()
+        clear_button = QPushButton("Clear")
+        clear_button.clicked.connect(lambda: self.show_reveal_page())
+        button_layout.addWidget(clear_button)
+
+        browse_cover_button = QPushButton("Browse steg image")
+        browse_cover_button.clicked.connect(lambda: self.select_container_image(self.container_display_label))
+        button_layout.addWidget(browse_cover_button)
+
         reveal_button = QPushButton("Reveal")
+        reveal_button.clicked.connect(lambda: self.perform_reveal(self.container_image_filepath))
+        button_layout.addWidget(reveal_button)
 
-        layout = QVBoxLayout()
-        layout.addWidget(title_label)
-        layout.addWidget(input_label)
-        layout.addWidget(steg_image_button)
-        layout.addWidget(reveal_button)
+        self.download_revealed_secret_image_button = QPushButton("Download revealed secret image")
+        self.download_revealed_secret_image_button.setEnabled(False)
+        self.download_revealed_secret_image_button.clicked.connect(lambda: self.download_image())
+        button_layout.addWidget(self.download_revealed_secret_image_button)
 
-        page_widget = QWidget()
-        page_widget.setLayout(layout)
-
-        self.main_layout.addWidget(page_widget)
+        button_layout_widget = QWidget()
+        button_layout_widget.setLayout(button_layout)
+        self.main_layout.addWidget(button_layout_widget)
 
     def show_super_resolution_page(self):
+        self.low_res_image_filepath = None
         # Clear the main window layout
         self.clear_main_layout()
 
         # Add content to the super resolution page
         title_label = QLabel("<H2>Enhanced Super Resolution using ESRGAN</H2>")
+        title_label.setAlignment(Qt.AlignTop)
         title_label.setStyleSheet("font-size: 24px; color: #ffffff; margin-bottom: 20px;")
         self.main_layout.addWidget(title_label)
 
         # ESRGAN model path label
         model_path_label = QLabel("<h5>Model Path: InvisiCipher/app/models/ESRGAN/models/RRDB_ESRGAN_x4.pth</h5>")
         model_path_label.setStyleSheet("font-size: 16px; color: #c6c6c6; margin-bottom: 20px;")
+        model_path_label.setAlignment(Qt.AlignTop)
         self.main_layout.addWidget(model_path_label)
+
+        # GPU Info
+        gpu_info_label = QLabel(
+            "<b><ul><li>Device: GPU:0 with 1654 MB memory</li><li>NVIDIA GeForce RTX 3050 Laptop GPU</li><li>Compute capability: 8.6</li><li>Loaded cuDNN version 8302</li></ul></b>")
+        gpu_info_label.setStyleSheet("font-size: 13px; color: #fae69e;")
+        gpu_info_label.setAlignment(Qt.AlignTop)
+        self.main_layout.addWidget(gpu_info_label)
 
         # Low resolution image selection
         low_res_label = QLabel("Select Low Resolution Image:")
+        low_res_label.setAlignment(Qt.AlignCenter)
         low_res_label.setStyleSheet("font-size: 16px; color: #c6c6c6; margin-bottom: 10px; font-weight: bold;")
         self.main_layout.addWidget(low_res_label)
 
         # image display
         image_label = QLabel()
         image_label.setAlignment(Qt.AlignCenter)
+        pixmap = QPixmap("assets/dummy_images/lr_image_dummy.png")
+        image_label.setPixmap(pixmap.scaled(384, 384, Qt.KeepAspectRatio))
         self.main_layout.addWidget(image_label)
-
-        # Create a progress bar widget
-        progress_bar = QProgressBar(self)
-        progress_bar.setGeometry(10, 220, 200, 20)
 
         # defining button layout
         button_layout = QHBoxLayout()
 
         # Browse button
+        clear_button = QPushButton("Clear")
+        clear_button.clicked.connect(lambda: self.show_super_resolution_page())
+        button_layout.addWidget(clear_button)
+
         browse_button = QPushButton("Browse")
         browse_button.clicked.connect(lambda: self.select_low_resolution_image(image_label))
         button_layout.addWidget(browse_button)
@@ -209,8 +387,9 @@ class MainAppWindow(QMainWindow):
 
         # Download button
         download_button = QPushButton("Download")
+        download_button.setObjectName("download_button")
         download_button.setEnabled(False)
-        download_button.clicked.connect(self.download_high_resolution_image)
+        download_button.clicked.connect(self.download_image)
         button_layout.addWidget(download_button)
 
         # add the button layout to the main layout
@@ -221,7 +400,7 @@ class MainAppWindow(QMainWindow):
         # Set the image labels as attributes
         self.low_res_image_text_label = low_res_label
         self.image_label = image_label
-        self.download_button = download_button
+        self.download_HR_button = download_button
 
     def select_low_resolution_image(self, label):
         file_dialog = QFileDialog()
@@ -266,13 +445,15 @@ class MainAppWindow(QMainWindow):
             pixmap = QPixmap(high_res_image_path).scaled(400, 400, Qt.KeepAspectRatio)
             label.setPixmap(pixmap)
             self.low_res_image_text_label.setText("High Res Image:")
-            self.download_button.setEnabled(True)
+            self.low_res_image_text_label.setStyleSheet(
+                "font-size: 16px; color: #00ff00; margin-bottom: 10px; font-weight: bold;")
+            self.download_HR_button.setEnabled(True)
         else:
             QMessageBox.critical(self, "Upscaling Error", "Failed to upscale the image.")
 
-    def download_high_resolution_image(self):
+    def download_image(self):
         # Implement the logic to download the high resolution image
-        QMessageBox.information(self, "Download", "Downloading the high resolution image...")
+        QMessageBox.information(self, "Download", "Downloaded the image...")
 
     def clear_main_layout(self):
         # Remove all widgets from the main layout
@@ -281,14 +462,64 @@ class MainAppWindow(QMainWindow):
             if child.widget():
                 child.widget().deleteLater()
 
+    def select_cover_image(self, label):
+        file_dialog = QFileDialog()
+        filepath, _ = file_dialog.getOpenFileName(self, "Select cover Image")
+        if filepath:
+            self.cover_image_filepath = filepath
+            pixmap = QPixmap(filepath)
+            label.setPixmap(pixmap.scaled(256, 256, Qt.KeepAspectRatio))
+
+    def select_secret_image(self, label):
+        file_dialog = QFileDialog()
+        filepath, _ = file_dialog.getOpenFileName(self, "Select secret Image")
+        if filepath:
+            self.secret_image_filepath = filepath
+            pixmap = QPixmap(filepath)
+            label.setPixmap(pixmap.scaled(256, 256, Qt.KeepAspectRatio))
+
+    def select_container_image(self, label):
+        file_dialog = QFileDialog()
+        filepath, _ = file_dialog.getOpenFileName(self, "Select secret Image")
+        if filepath:
+            self.container_image_filepath = filepath
+            pixmap = QPixmap(filepath)
+            label.setPixmap(pixmap.scaled(256, 256, Qt.KeepAspectRatio))
+
+    def perform_hide(self, cover_filepath, secret_filepath):
+        if cover_filepath is None or secret_filepath is None:
+            QMessageBox.information(self, "Hiding Error", "Please select the images first.")
+            return
+        try:
+            hide_image(cover_filepath, secret_filepath)
+            steg_image_path = 'C:/Users/asirw/PycharmProjects/InvisiCipher/app/steg_image.png'
+            pixmap = QPixmap(steg_image_path)
+            self.steg_display_label.setPixmap(pixmap.scaled(256, 256, Qt.KeepAspectRatio))
+            self.download_steg_button.setEnabled(True)
+        except:
+            QMessageBox.critical(self, "Hiding Error", "Failed to hide the image.")
+
+    def perform_reveal(self, filepath):
+        if filepath is None:
+            QMessageBox.information(self, "Revealing Error", "Please select the image first.")
+            return
+        try:
+            reveal_image(filepath)
+            secret_out_filepath = "C:/Users/asirw/PycharmProjects/InvisiCipher/app/secret_out.png"
+            pixmap = QPixmap(secret_out_filepath)
+            self.secret_out_display_label.setPixmap(pixmap.scaled(256, 256, Qt.KeepAspectRatio))
+            self.download_revealed_secret_image_button.setEnabled(True)
+        except:
+            QMessageBox.critical(self, "Revealing error", "Failed to reveal the image")
+
     def logout(self):
         dialog = QDialog(self)
         dialog.setWindowTitle("Logout")
-        dialog.setMinimumSize(200, 100)
+        dialog.setMinimumSize(380, 100)
 
         layout = QVBoxLayout(dialog)
         msg_box = QMessageBox()
-        msg_box.setText("Are you sure you want to logout?")
+        msg_box.setText("<h3>Are you sure you want to logout?</h3>")
 
         # Set custom font and size
         font = QFont("Arial", 12)  # Adjust the font and size as desired
@@ -315,13 +546,14 @@ class MainAppWindow(QMainWindow):
         dialog.exec_()
 
     def load_stylesheet(self):
-        stylesheet = QFile("styles/style.css")
+        stylesheet = QFile("styles/style.qss")
         if stylesheet.open(QFile.ReadOnly | QFile.Text):
             stream = QTextStream(stylesheet)
             self.setStyleSheet(stream.readAll())
 
 
 # Create the application
+QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
 app = QApplication(sys.argv)
 window = MainAppWindow()
 window.load_stylesheet()
