@@ -19,7 +19,7 @@ Welcome to our Steganography and Super Resolution project! This project combines
 
 ✨ **Interactive Hiding**: Utilize our intuitive hide network powered by CNNs to embed secret images within cover images effortlessly.
 
-🔒 **Secure Encryption**: Choose from multiple chaos encryption algorithms such as EAS, Blowfish to encrypt your steg image and protect your secrets.
+🔒 **Secure Encryption**: Choose from multiple chaos encryption algorithms such as AES, Blowfish to encrypt your steg image and protect your secrets.
 
 🌟 **Enhanced Super Resolution**: Witness the magic of our ESRGAN model as it enhances the resolution and quality of the hidden image, revealing every detail.
 
@@ -33,7 +33,7 @@ The project architecture consists of the following components:
 
 2. **Hide Network**: Another CNN-based network that embeds the prepared secret image within the cover image, producing the steg image.
 
-3. **Chaos Encryption**: Choose between RSA encryption, Blowfish encryption, or logistic map chaos encryption to secure your steg image.
+3. **Chaos Encryption**: Choose between AES encryption, Blowfish encryption to secure your steg image.
 
 4. **Chaos Decryption**: Decrypt the encrypted steg image using the corresponding decryption algorithm to retrieve the steg image.
 

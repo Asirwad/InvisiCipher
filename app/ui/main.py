@@ -21,6 +21,14 @@ class MainAppWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         # vars
+        self.main_content = None
+        self.blowfish_radio_dec = None
+        self.aes_radio_dec = None
+        self.key_text_box_of_dec = None
+        self.enc_filepath = None
+        self.dec_display_label = None
+        self.download_dec_button = None
+        self.dec_img_text_label = None
         self.enc_img_text_label = None
         self.key_text_box = None
         self.blowfish_radio = None
@@ -108,15 +116,15 @@ class MainAppWindow(QMainWindow):
         side_navigation.setLayout(side_layout)
 
         # Create the main content area
-        main_content = BackgroundWidget()
-        main_content.setObjectName("main_content")
+        self.main_content = BackgroundWidget()
+        self.main_content.setObjectName("main_content")
+        self.main_content.set_background_image("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/components_backgrounds/main_window_welcome_bg.png")
         self.main_layout = QVBoxLayout()
-        main_content.set_background_image("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/components_backgrounds/main_window_bg.png")
-        main_content.setLayout(self.main_layout)
+        self.main_content.setLayout(self.main_layout)
 
         # Add the side navigation and main content to the main window layout
         main_layout.addWidget(side_navigation)
-        main_layout.addWidget(main_content)
+        main_layout.addWidget(self.main_content)
 
         # Set the main window layout
         central_widget = QWidget()
@@ -124,6 +132,7 @@ class MainAppWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
     def show_encryption_page(self):
+        self.main_content.set_background_image("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/components_backgrounds/main_window_bg.png")
         self.image_tobe_enc_filepath = None
         self.key_text_box = None
         self.enc_img_text_label =None
@@ -206,7 +215,7 @@ class MainAppWindow(QMainWindow):
 
         self.download_enc_button = QPushButton("Download encrypted file")
         self.download_enc_button.setEnabled(False)
-        # self.download_enc_button.clicked.connect(lambda: self.download_image())
+        self.download_enc_button.clicked.connect(lambda: self.download_image())
         button_layout.addWidget(self.download_enc_button)
 
         button_layout_widget = QWidget()
@@ -214,25 +223,96 @@ class MainAppWindow(QMainWindow):
         self.main_layout.addWidget(button_layout_widget)
 
     def show_decryption_page(self):
+        self.main_content.set_background_image("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/components_backgrounds/main_window_bg.png")
+        self.key_text_box_of_dec = None
+        # Clear the main window layout
         self.clear_main_layout()
 
-        title_label = QLabel("Decryption Page")
-        input_label = QLabel("Enter the text to decrypt:")
-        input_text = QLineEdit()
+        # Add content to the super resolution page
+        title_label = QLabel("<H2>Image Decryption</H2>")
+        title_label.setStyleSheet("font-size: 24px; color: #ffffff;")
+        title_label.setAlignment(Qt.AlignTop)
+        self.main_layout.addWidget(title_label)
+
+        # label layout
+        label_layout = QHBoxLayout()
+
+        method_text_label = QLabel("Select Decryption method:")
+        method_text_label.setAlignment(Qt.AlignVCenter)
+        method_text_label.setStyleSheet("font-size: 16px; color: #c6c6c6; margin-bottom: 10px; font-weight: bold;")
+        label_layout.addWidget(method_text_label)
+
+        self.dec_img_text_label = QLabel("Select the file to be decrypted:")
+        self.dec_img_text_label.setAlignment(Qt.AlignCenter)
+        self.dec_img_text_label.setStyleSheet("font-size: 16px; color: #c6c6c6; margin-bottom: 10px; font-weight: bold;")
+        label_layout.addWidget(self.dec_img_text_label)
+
+        label_layout_widget = QWidget()
+        label_layout_widget.setLayout(label_layout)
+        self.main_layout.addWidget(label_layout_widget)
+
+        # Image  display layout
+        image_display_layout = QHBoxLayout()
+
+        radio_layout = QVBoxLayout()
+        radio_layout.setAlignment(Qt.AlignLeft)
+        self.aes_radio_dec = QRadioButton("AES Decryption")
+        self.aes_radio_dec.setStyleSheet("font-size: 16px; color: #fae69e; font-weight: bold;")
+        self.blowfish_radio_dec = QRadioButton("Blowfish Decryption")
+        self.blowfish_radio_dec.setStyleSheet("font-size: 16px; color: #fae69e; font-weight: bold;")
+        encryption_group = QButtonGroup()
+        encryption_group.addButton(self.aes_radio_dec)
+        encryption_group.addButton(self.blowfish_radio_dec)
+        radio_layout.addWidget(self.blowfish_radio_dec)
+        radio_layout.addWidget(self.aes_radio_dec)
+
+        key_text_label = QLabel("<br><br><br>Enter the secret key")
+        key_text_label.setStyleSheet("font-size: 18px; color: #ffffff; font-weight: bold;")
+        radio_layout.addWidget(key_text_label)
+
+        self.key_text_box_of_dec = CustomTextBox()
+        self.key_text_box_of_dec.setFixedWidth(300)
+        radio_layout.addWidget(self.key_text_box_of_dec)
+
+        radio_layout_widget = QWidget()
+        radio_layout_widget.setLayout(radio_layout)
+        image_display_layout.addWidget(radio_layout_widget)
+
+        self.dec_display_label = QLabel()
+        self.dec_display_label.setAlignment(Qt.AlignLeft)
+        pixmap = QPixmap("assets/dummy_images/image_dummy.png")
+        self.dec_display_label.setPixmap(pixmap.scaled(256, 256, Qt.KeepAspectRatio))
+        image_display_layout.addWidget(self.dec_display_label)
+
+        image_display_layout_widget = QWidget()
+        image_display_layout_widget.setLayout(image_display_layout)
+        self.main_layout.addWidget(image_display_layout_widget)
+
+        # button layout
+        button_layout = QHBoxLayout()
+        clear_button = QPushButton("Clear")
+        clear_button.clicked.connect(lambda: self.show_decryption_page())
+        button_layout.addWidget(clear_button)
+
+        browse_enc_button = QPushButton("Browse encrypted file")
+        browse_enc_button.clicked.connect(lambda: self.select_dec_image(self.dec_display_label))
+        button_layout.addWidget(browse_enc_button)
+
         decrypt_button = QPushButton("Decrypt")
+        decrypt_button.clicked.connect(lambda: self.perform_decryption(self.enc_filepath))
+        button_layout.addWidget(decrypt_button)
 
-        layout = QVBoxLayout()
-        layout.addWidget(title_label)
-        layout.addWidget(input_label)
-        layout.addWidget(input_text)
-        layout.addWidget(decrypt_button)
+        self.download_dec_button = QPushButton("Download decrypted image")
+        self.download_dec_button.setEnabled(False)
+        self.download_dec_button.clicked.connect(lambda: self.download_image())
+        button_layout.addWidget(self.download_dec_button)
 
-        page_widget = QWidget()
-        page_widget.setLayout(layout)
-
-        self.main_layout.addWidget(page_widget)
+        button_layout_widget = QWidget()
+        button_layout_widget.setLayout(button_layout)
+        self.main_layout.addWidget(button_layout_widget)
 
     def show_image_hiding_page(self):
+        self.main_content.set_background_image("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/components_backgrounds/main_window_bg.png")
         self.secret_image_filepath = None
         self.cover_image_filepath = None
         # Clear the main window layout
@@ -329,6 +409,7 @@ class MainAppWindow(QMainWindow):
         self.main_layout.addWidget(button_layout_widget)
 
     def show_reveal_page(self):
+        self.main_content.set_background_image("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/components_backgrounds/main_window_bg.png")
         self.clear_main_layout()
 
         # Add content to the super resolution page
@@ -407,6 +488,7 @@ class MainAppWindow(QMainWindow):
         self.main_layout.addWidget(button_layout_widget)
 
     def show_super_resolution_page(self):
+        self.main_content.set_background_image("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/components_backgrounds/main_window_bg.png")
         self.low_res_image_filepath = None
         # Clear the main window layout
         self.clear_main_layout()
@@ -569,6 +651,14 @@ class MainAppWindow(QMainWindow):
             pixmap = QPixmap(filepath)
             label.setPixmap(pixmap.scaled(256, 256, Qt.KeepAspectRatio))
 
+    def select_dec_image(self, label):
+        file_dialog = QFileDialog()
+        filepath, _ = file_dialog.getOpenFileName(self, "Select enc file")
+        if filepath:
+            self.enc_filepath = filepath
+            pixmap = QPixmap("assets/dummy_images/locked_image_dummy.png")
+            label.setPixmap(pixmap.scaled(256, 256, Qt.KeepAspectRatio))
+
     def perform_hide(self, cover_filepath, secret_filepath):
         if cover_filepath is None or secret_filepath is None:
             QMessageBox.information(self, "Hiding Error", "Please select the images first.")
@@ -618,7 +708,39 @@ class MainAppWindow(QMainWindow):
             self.enc_display_label.setPixmap(pixmap.scaled(256, 256, Qt.KeepAspectRatio))
             self.key_text_box.setText("")
         except:
-            QMessageBox.critical(self, "Revealing error", "Failed to reveal the image")
+            QMessageBox.critical(self, "Encrypting error", "Failed to encryp the image")
+
+    def perform_decryption(self, filepath):
+        dec_filename = None
+        if filepath is None:
+            QMessageBox.information(self, "Decrypting Error", "Please select the image first.")
+            return
+        if not self.aes_radio_dec.isChecked() and not self.blowfish_radio_dec.isChecked():
+            QMessageBox.information(self, "Decrypting Error", "Please select an decryption method.")
+            return
+        if self.key_text_box_of_dec.text() == "":
+            QMessageBox.information(self, "Decrypting Error", "Please enter a secret key")
+            return
+        try:
+            if self.aes_radio_dec.isChecked():
+                result, dec_filename = aes.decrypt(filepath, self.key_text_box_of_dec.text())
+                if result == -1:
+                    QMessageBox.critical(self, "Decrypting error", "Wrong Key!                   ")
+                    return
+            else:
+                result, dec_filename = blowfish.decrypt(filepath, self.key_text_box_of_dec.text())
+                if result == -1:
+                    QMessageBox.critical(self, "Decrypting error", "Wrong Key!                    ")
+                    return
+            self.download_dec_button.setEnabled(True)
+            self.dec_img_text_label.setText("Decrypted!")
+            self.dec_img_text_label.setStyleSheet(
+                "font-size: 16px; color: #00ff00; margin-bottom: 10px; font-weight: bold;")
+            pixmap = QPixmap(dec_filename)
+            self.dec_display_label.setPixmap(pixmap.scaled(256, 256, Qt.KeepAspectRatio))
+            self.key_text_box_of_dec.setText("")
+        except:
+            QMessageBox.critical(self, "Decrypting error", "Failed to decrypt the file")
 
     def logout(self):
         dialog = QDialog(self)
