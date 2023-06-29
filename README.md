@@ -61,10 +61,6 @@ To get started with our project, follow these steps:
 
 We welcome contributions from the open source community. If you find any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request.
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
 ## Acknowledgements
 
 We would like to acknowledge the following resources and libraries used in this project:
