@@ -10,7 +10,9 @@ def hide_image(cover_image_filepath, secret_image_filepath):
     model = load_model("C:/Users/asirw/PycharmProjects/InvisiCipher/app/models/DEEP_STEGO/models/hide.h5")
 
     secret_image_in = Image.open(secret_image_filepath).convert('RGB')
+    print("secret image size : ", secret_image_in.size)
     cover_image_in = Image.open(cover_image_filepath).convert('RGB')
+    print("cover image size : ", cover_image_in.size)
 
     # Resize if image to 224px*224px
     if secret_image_in.size != (224, 224):
