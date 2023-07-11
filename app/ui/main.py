@@ -16,6 +16,9 @@ import torch
 import cv2
 import numpy as np
 
+# TODO: change the default window border color
+# TODO: when the icon is  clicked , app should goto home page
+# TODO: modify all pop up windows
 
 class MainAppWindow(QMainWindow):
     def __init__(self):
