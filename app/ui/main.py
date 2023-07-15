@@ -16,9 +16,6 @@ import torch
 import cv2
 import numpy as np
 
-# TODO: change the default window border color
-# TODO: when the icon is  clicked , app should goto home page
-# TODO: modify all pop up windows
 
 class MainAppWindow(QMainWindow):
     def __init__(self):
@@ -67,15 +64,14 @@ class MainAppWindow(QMainWindow):
 
         # Create the side navigation bar
         side_navigation = BackgroundWidget()
-        side_navigation.set_background_image("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/components_backgrounds/sidebar_bg.jpg")
+        side_navigation.set_background_image("assets/components_backgrounds/sidebar_bg.jpg")
         side_navigation.setObjectName("side_navigation")
         side_navigation.setFixedWidth(200)
         side_layout = QVBoxLayout()
 
         # label for logo
         logo_label = QLabel()
-        logo_path = "C:/Users/asirw/PycharmProjects/InvisiCipher/logo.png"
-        logo_pixmap = QPixmap(logo_path).scaled(50, 50, Qt.KeepAspectRatio)
+        logo_pixmap = QPixmap("logo.png").scaled(50, 50, Qt.KeepAspectRatio)
         logo_label.setPixmap(logo_pixmap)
         logo_label.setAlignment(Qt.AlignCenter)
 
@@ -121,7 +117,7 @@ class MainAppWindow(QMainWindow):
         # Create the main content area
         self.main_content = BackgroundWidget()
         self.main_content.setObjectName("main_content")
-        self.main_content.set_background_image("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/components_backgrounds/main_window_welcome_bg.png")
+        self.main_content.set_background_image("assets/components_backgrounds/main_window_welcome_bg.png")
         self.main_layout = QVBoxLayout()
         self.main_content.setLayout(self.main_layout)
 
@@ -135,7 +131,7 @@ class MainAppWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
     def show_encryption_page(self):
-        self.main_content.set_background_image("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/components_backgrounds/main_window_bg.png")
+        self.main_content.set_background_image("assets/components_backgrounds/main_window_bg.png")
         self.image_tobe_enc_filepath = None
         self.key_text_box = None
         self.enc_img_text_label =None
@@ -226,7 +222,7 @@ class MainAppWindow(QMainWindow):
         self.main_layout.addWidget(button_layout_widget)
 
     def show_decryption_page(self):
-        self.main_content.set_background_image("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/components_backgrounds/main_window_bg.png")
+        self.main_content.set_background_image("assets/components_backgrounds/main_window_bg.png")
         self.key_text_box_of_dec = None
         # Clear the main window layout
         self.clear_main_layout()
@@ -315,7 +311,7 @@ class MainAppWindow(QMainWindow):
         self.main_layout.addWidget(button_layout_widget)
 
     def show_image_hiding_page(self):
-        self.main_content.set_background_image("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/components_backgrounds/main_window_bg.png")
+        self.main_content.set_background_image("assets/components_backgrounds/main_window_bg.png")
         self.secret_image_filepath = None
         self.cover_image_filepath = None
         # Clear the main window layout
@@ -412,7 +408,7 @@ class MainAppWindow(QMainWindow):
         self.main_layout.addWidget(button_layout_widget)
 
     def show_reveal_page(self):
-        self.main_content.set_background_image("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/components_backgrounds/main_window_bg.png")
+        self.main_content.set_background_image("assets/components_backgrounds/main_window_bg.png")
         self.clear_main_layout()
 
         # Add content to the super resolution page
@@ -491,7 +487,7 @@ class MainAppWindow(QMainWindow):
         self.main_layout.addWidget(button_layout_widget)
 
     def show_super_resolution_page(self):
-        self.main_content.set_background_image("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/components_backgrounds/main_window_bg.png")
+        self.main_content.set_background_image("assets/components_backgrounds/main_window_bg.png")
         self.low_res_image_filepath = None
         # Clear the main window layout
         self.clear_main_layout()
@@ -748,7 +744,7 @@ class MainAppWindow(QMainWindow):
     def logout(self):
         dialog = QDialog(self)
         dialog.setWindowTitle("Logout")
-        dialog.setMinimumSize(380, 100)
+        dialog.setMinimumSize(450, 100)
 
         layout = QVBoxLayout(dialog)
         msg_box = QMessageBox()

@@ -6,15 +6,15 @@ QPushButton {
   position: relative;
   padding: 10px 20px;
   border-radius: 7px;
-  border: 1px solid #9342ff;
+  border: 1.5px solid #9342ff;
   font-size: 12px;
   font-weight: 500;
-  font-family: "Railway", Arial, sans-serif;
+  font-family: Oswald, Arial, sans-serif;
   letter-spacing: 1px;
-  background: transparent;
+
   color: #ffffff;
   overflow: hidden;
-  box-shadow: 0 0 0 0 #ffffff;
+  box-shadow: 0 0 0 0 #000000;
 }
 QPushButton:hover {
   background: #9342ff;
