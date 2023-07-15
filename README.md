@@ -57,6 +57,30 @@ To get started with our project, follow these steps:
 
 6. **Explore the Scripts**: Utilize the provided scripts to hide, encrypt, reveal, and enhance images based on your specific requirements.
 
+## Welcome screen
+
+<p align="center">
+  <img src="app/ui/assets/readme_assets/main_window.png" alt="Welcome" width="1000">
+</p>
+
+## Image hide
+
+<p align="center">
+  <img src="app/ui/assets/readme_assets/hide.png" alt="Image hide" width="1000">
+</p>
+
+## Image reveal
+
+<p align="center">
+  <img src="app/ui/assets/readme_assets/reveal.png" alt="Image reveal" width="1000">
+</p>
+
+## Super resolution
+
+<p align="center">
+  <img src="app/ui/assets/readme_assets/superres.png" alt="Super resolution" width="1000">
+</p>
+
 ## Contributing
 
 We welcome contributions from the open source community. If you find any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request.
