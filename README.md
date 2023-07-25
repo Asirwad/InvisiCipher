@@ -96,5 +96,3 @@ We would like to acknowledge the following resources and libraries used in this 
 ## Contact
 
 For any questions or inquiries, please contact us at [asirwadsali@gmail.com](mailto:asirwadsali@gmail.com).
-
-</div>
