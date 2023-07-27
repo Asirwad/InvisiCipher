@@ -1,7 +1,7 @@
 import os
 import glob
 import numpy as np
-import tensorflow.compat.v1 as tf  # Ensure TF2 compatibility
+import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Input, concatenate, Conv2D, GaussianNoise
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -20,7 +20,7 @@ from io import StringIO, BytesIO
 from app.models.DEEP_STEGO.Utils.preprocessing import normalize_batch, denormalize_batch
 from app.models.DEEP_STEGO.Utils.customLossWeight import custom_loss_1, custom_loss_2
 
-tf.disable_v2_behavior()
+tf.compat.v1.disable_v2_behavior()
 
 # %matplotlib inline
 
