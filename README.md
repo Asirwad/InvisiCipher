@@ -89,9 +89,11 @@ We welcome contributions from the open source community. If you find any issues 
 
 We would like to acknowledge the following resources and libraries used in this project:
 
-- <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Tensorflow_logo.svg/1915px-Tensorflow_logo.svg.png" alt="TensorFlow" width="30" align="center"> TensorFlow: [https://www.tensorflow.org/](https://www.tensorflow.org/)
+- <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Tensorflow_logo.svg/1915px-Tensorflow_logo.svg.png" alt="TensorFlow" width="26" align="center"> TensorFlow: [↗️](https://www.tensorflow.org/)
 - <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/PyTorch_logo_icon.svg/1200px-PyTorch_logo_icon.svg.png"
- alt="PyTorch" width="25" align="center"> PyTorch: [https://pytorch.org/](https://pytorch.org/)
+ alt="PyTorch" width="25" align="center"> PyTorch: [↗️](https://pytorch.org/)
+- <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Python_and_Qt.svg/800px-Python_and_Qt.svg.png"
+ alt="PyQt" width="25" align="center"> PyQt: [↗️](https://www.qt.io/qt-for-python)
 
 ## Contact
 
