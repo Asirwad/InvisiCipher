@@ -105,7 +105,7 @@ class MainAppWindow(QMainWindow):
         side_layout.addWidget(super_resolution_button)
 
         # Add a logout button
-        logout_button = QPushButton("Logout")
+        logout_button = QPushButton("Exit")
         logout_button.setObjectName("logout_button")
         logout_button.clicked.connect(self.logout)
         side_layout.addStretch()
@@ -748,7 +748,7 @@ class MainAppWindow(QMainWindow):
 
         layout = QVBoxLayout(dialog)
         msg_box = QMessageBox()
-        msg_box.setText("<h3>Are you sure you want to logout?</h3>")
+        msg_box.setText("<h3>Are you sure you want to Exit?</h3>")
 
         # Set custom font and size
         font = QFont("Arial", 12)  # Adjust the font and size as desired
