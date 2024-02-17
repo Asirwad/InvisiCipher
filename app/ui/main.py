@@ -12,6 +12,7 @@ from app.models.encryption import aes, blowfish
 from app.models.DEEP_STEGO.hide_image import hide_image
 from app.models.DEEP_STEGO.reveal_image import reveal_image
 from app.models.ESRGAN import RRDBNet_arch as arch
+from app.models.StableDiffusionAPI import StableDiffusionV2
 import torch
 import cv2
 import numpy as np
@@ -87,6 +88,7 @@ class MainAppWindow(QMainWindow):
         image_hiding_button = QPushButton("Image Hide")
         image_reveal_button = QPushButton("Image Reveal")
         super_resolution_button = QPushButton("Super Resolution")
+        imagegen_button = QPushButton("Generate image")
 
         # Connect button signals to their corresponding slots
         encryption_button.clicked.connect(self.show_encryption_page)
@@ -94,6 +96,7 @@ class MainAppWindow(QMainWindow):
         image_hiding_button.clicked.connect(self.show_image_hiding_page)
         image_reveal_button.clicked.connect(self.show_reveal_page)
         super_resolution_button.clicked.connect(self.show_super_resolution_page)
+        imagegen_button.clicked.connect(self.show_imagegen_page)
 
         # Add buttons to the side navigation layout
         side_layout.addWidget(logo_label)
@@ -103,6 +106,7 @@ class MainAppWindow(QMainWindow):
         side_layout.addWidget(decryption_button)
         side_layout.addWidget(image_reveal_button)
         side_layout.addWidget(super_resolution_button)
+        side_layout.addWidget(imagegen_button)
 
         # Add a logout button
         logout_button = QPushButton("Exit")
@@ -212,7 +216,7 @@ class MainAppWindow(QMainWindow):
         encrypt_button.clicked.connect(lambda: self.perform_encryption(self.image_tobe_enc_filepath))
         button_layout.addWidget(encrypt_button)
 
-        self.download_enc_button = QPushButton("Download encrypted file")
+        self.download_enc_button = QPushButton("Download🔽")
         self.download_enc_button.setEnabled(False)
         self.download_enc_button.clicked.connect(lambda: self.download_image())
         button_layout.addWidget(self.download_enc_button)
@@ -301,7 +305,7 @@ class MainAppWindow(QMainWindow):
         decrypt_button.clicked.connect(lambda: self.perform_decryption(self.enc_filepath))
         button_layout.addWidget(decrypt_button)
 
-        self.download_dec_button = QPushButton("Download decrypted image")
+        self.download_dec_button = QPushButton("Download🔽")
         self.download_dec_button.setEnabled(False)
         self.download_dec_button.clicked.connect(lambda: self.download_image())
         button_layout.addWidget(self.download_dec_button)
@@ -398,7 +402,7 @@ class MainAppWindow(QMainWindow):
         hide_button.clicked.connect(lambda: self.perform_hide(self.cover_image_filepath, self.secret_image_filepath))
         button_layout.addWidget(hide_button)
 
-        self.download_steg_button = QPushButton("Download steg image")
+        self.download_steg_button = QPushButton("Download steg image🔽")
         self.download_steg_button.setEnabled(False)
         self.download_steg_button.clicked.connect(lambda: self.download_image())
         button_layout.addWidget(self.download_steg_button)
@@ -477,7 +481,7 @@ class MainAppWindow(QMainWindow):
         reveal_button.clicked.connect(lambda: self.perform_reveal(self.container_image_filepath))
         button_layout.addWidget(reveal_button)
 
-        self.download_revealed_secret_image_button = QPushButton("Download revealed secret image")
+        self.download_revealed_secret_image_button = QPushButton("Download🔽")
         self.download_revealed_secret_image_button.setEnabled(False)
         self.download_revealed_secret_image_button.clicked.connect(lambda: self.download_image())
         button_layout.addWidget(self.download_revealed_secret_image_button)
@@ -542,7 +546,7 @@ class MainAppWindow(QMainWindow):
         button_layout.addWidget(upscale_button)
 
         # Download button
-        download_button = QPushButton("Download")
+        download_button = QPushButton("Download🔽")
         download_button.setObjectName("download_button")
         download_button.setEnabled(False)
         download_button.clicked.connect(self.download_image)
@@ -557,6 +561,69 @@ class MainAppWindow(QMainWindow):
         self.low_res_image_text_label = low_res_label
         self.image_label = image_label
         self.download_HR_button = download_button
+
+    def show_imagegen_page(self):
+        self.main_content.set_background_image("assets/components_backgrounds/main_window_bg.png")
+        self.clear_main_layout()
+
+        # Add content to the super resolution page
+        title_label = QLabel("<H2>StackGAN : Image generation using GenAI</H2>")
+        title_label.setStyleSheet("font-size: 24px; color: #ffffff;")
+        title_label.setAlignment(Qt.AlignTop)
+        self.main_layout.addWidget(title_label)
+
+        # StackGAN model path label
+        model_path_label = QLabel("<h5>Model Path: InvisiCipher/app/models/StackGAN/models/<h5>")
+        model_path_label.setStyleSheet("font-size: 16px; color: #c6c6c6; margin-bottom: 20px;")
+        model_path_label.setAlignment(Qt.AlignTop)
+        self.main_layout.addWidget(model_path_label)
+
+        # GPU Info
+        gpu_info_label = QLabel(
+            "<b><ul><li>Device: GPU:0 with 1654 MB memory</li><li>NVIDIA GeForce RTX 3050 Laptop GPU</li><li>Compute capability: 8.6</li><li>Loaded cuDNN version 8302</li></ul></b>")
+        gpu_info_label.setStyleSheet("font-size: 13px; color: #fae69e;")
+        gpu_info_label.setAlignment(Qt.AlignTop)
+        self.main_layout.addWidget(gpu_info_label)
+
+        # image display
+        image_label = QLabel()
+        image_label.setAlignment(Qt.AlignCenter)
+        pixmap = QPixmap("assets/dummy_images/imagegen_dummy.png")
+        image_label.setPixmap(pixmap.scaled(384, 384, Qt.KeepAspectRatio))
+        self.main_layout.addWidget(image_label)
+
+        # Text description enter prompt
+        image_desc_label = QLabel("Your image description here")
+        image_desc_label.setAlignment(Qt.AlignCenter)
+        image_desc_label.setStyleSheet("font-size: 16px; color: #c6c6c6; margin-bottom: 10px; font-weight: bold;")
+        self.main_layout.addWidget(image_desc_label)
+
+        # defining button layout
+        button_layout = QHBoxLayout()
+
+        # clear button
+        clear_button = QPushButton("Clear")
+        clear_button.clicked.connect(lambda: self.show_image_hiding_page())
+        button_layout.addWidget(clear_button)
+
+        # Up-scale button
+        generate_button = QPushButton("Generate✨")
+        # generate_button.clicked.connect(lambda: self.upscaleImage(image_label))
+        button_layout.addWidget(generate_button)
+
+        # Download button
+        download_button = QPushButton("Download🔽")
+        download_button.setObjectName("download_button")
+        download_button.setEnabled(False)
+        # download_button.clicked.connect(self.download_image)
+        button_layout.addWidget(download_button)
+
+        # add the button layout to the main layout
+        button_widget = QWidget()
+        button_widget.setLayout(button_layout)
+        self.main_layout.addWidget(button_widget)
+
+
 
     def select_low_resolution_image(self, label):
         file_dialog = QFileDialog()
