@@ -743,7 +743,7 @@ class MainAppWindow(QMainWindow):
 
     def logout(self):
         dialog = QDialog(self)
-        dialog.setWindowTitle("Logout")
+        dialog.setWindowTitle("Exit")
         dialog.setMinimumSize(450, 100)
 
         layout = QVBoxLayout(dialog)
