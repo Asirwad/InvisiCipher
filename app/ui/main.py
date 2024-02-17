@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 
@@ -7,7 +8,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHB
     QLabel, QMessageBox, QProgressBar, QFileDialog, QSizePolicy, QLayout, QDialog, QRadioButton, QButtonGroup
 from PyQt5.QtCore import Qt
 from app.ui.components.backgroundwidget import BackgroundWidget
-from app.ui.components.customtextbox import CustomTextBox
+from app.ui.components.customtextbox import CustomTextBox, CustomTextBoxForImageGen
 from app.models.encryption import aes, blowfish
 from app.models.DEEP_STEGO.hide_image import hide_image
 from app.models.DEEP_STEGO.reveal_image import reveal_image
@@ -22,6 +23,8 @@ class MainAppWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         # vars
+        self.gen_image_label = None
+        self.text_desc_box = None
         self.main_content = None
         self.blowfish_radio_dec = None
         self.aes_radio_dec = None
@@ -138,7 +141,7 @@ class MainAppWindow(QMainWindow):
         self.main_content.set_background_image("assets/components_backgrounds/main_window_bg.png")
         self.image_tobe_enc_filepath = None
         self.key_text_box = None
-        self.enc_img_text_label =None
+        self.enc_img_text_label = None
         # Clear the main window layout
         self.clear_main_layout()
 
@@ -586,29 +589,48 @@ class MainAppWindow(QMainWindow):
         self.main_layout.addWidget(gpu_info_label)
 
         # image display
-        image_label = QLabel()
-        image_label.setAlignment(Qt.AlignCenter)
+        self.gen_image_label = QLabel()
+        self.gen_image_label.setAlignment(Qt.AlignCenter)
         pixmap = QPixmap("assets/dummy_images/imagegen_dummy.png")
-        image_label.setPixmap(pixmap.scaled(384, 384, Qt.KeepAspectRatio))
-        self.main_layout.addWidget(image_label)
+        self.gen_image_label.setPixmap(pixmap.scaled(384, 384, Qt.KeepAspectRatio))
+        self.main_layout.addWidget(self.gen_image_label)
 
         # Text description enter prompt
-        image_desc_label = QLabel("Your image description here")
+        image_desc_label = QLabel("Your image description here👇🏻")
         image_desc_label.setAlignment(Qt.AlignCenter)
-        image_desc_label.setStyleSheet("font-size: 16px; color: #c6c6c6; margin-bottom: 10px; font-weight: bold;")
+        image_desc_label.setStyleSheet("font-size: 16px; color: #c6c6c6; font-weight: semi-bold;")
         self.main_layout.addWidget(image_desc_label)
+
+        # defining layout for textbox and i'm feeling lucky
+        textbox_layout = QHBoxLayout()
+
+        # Create a QlineEdit widget
+        self.text_desc_box = CustomTextBoxForImageGen()
+        self.text_desc_box.setPlaceholderText("Type here....")
+        textbox_layout.addWidget(self.text_desc_box)
+
+        # i'm feeling lucky button
+        lucky_button = QPushButton("I'm feeling lucky")
+        lucky_button.clicked.connect(lambda: self.show_random_text(self.text_desc_box))
+        textbox_layout.addWidget(lucky_button)
+
+        # add the textbox layout to the main layout
+        textbox_widget = QWidget()
+        textbox_widget.setLayout(textbox_layout)
+        self.main_layout.addWidget(textbox_widget)
 
         # defining button layout
         button_layout = QHBoxLayout()
 
         # clear button
         clear_button = QPushButton("Clear")
-        clear_button.clicked.connect(lambda: self.show_image_hiding_page())
+        clear_button.clicked.connect(lambda: self.show_imagegen_page())
         button_layout.addWidget(clear_button)
 
-        # Up-scale button
+        # generate button
         generate_button = QPushButton("Generate✨")
-        # generate_button.clicked.connect(lambda: self.upscaleImage(image_label))
+        generate_button.setObjectName("gen_button")
+        generate_button.clicked.connect(lambda: self.generateImage(self.gen_image_label))
         button_layout.addWidget(generate_button)
 
         # Download button
@@ -623,8 +645,24 @@ class MainAppWindow(QMainWindow):
         button_widget.setLayout(button_layout)
         self.main_layout.addWidget(button_widget)
 
-
-
+    def generateImage(self, label):
+        print("Image gen")
+        gen_image_path = 'C:/Users/asirw/PycharmProjects/InvisiCipher/app/generated_image.png'
+        if self.text_desc_box.text() == "":
+            QMessageBox.information(self, "Generation Error", "Please enter a description")
+            return
+        try:
+            image = StableDiffusionV2.generate(text_prompt=self.text_desc_box.text())
+            image.save(gen_image_path)
+            pixmap = QPixmap(gen_image_path)
+            label.setPixmap(pixmap.scaled(400, 400, Qt.KeepAspectRatio))
+        except:
+            QMessageBox.critical(self, "Generating error", "Failed to generate the image")
+    def show_random_text(self, textbox):
+        import json, random
+        with open("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/json/lucky.json", "r") as f:
+            text = random.choice(json.load(f))
+            textbox.setText(text)
     def select_low_resolution_image(self, label):
         file_dialog = QFileDialog()
         low_res_image_filepath, _ = file_dialog.getOpenFileName(self, "Select Low Resolution Image")
