@@ -1,28 +1,30 @@
-import json
+import os
 import os
 import sys
 
+import cv2
+import numpy as np
+import torch
 from PyQt5.QtCore import QFile, QTextStream
-from PyQt5.QtGui import QIcon, QPixmap, QFont, QColor, QFontDatabase
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, \
-    QLabel, QMessageBox, QProgressBar, QFileDialog, QSizePolicy, QLayout, QDialog, QRadioButton, QButtonGroup
 from PyQt5.QtCore import Qt
-from app.ui.components.backgroundwidget import BackgroundWidget
-from app.ui.components.customtextbox import CustomTextBox, CustomTextBoxForImageGen
-from app.models.encryption import aes, blowfish
+from PyQt5.QtGui import QIcon, QPixmap, QFont
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, \
+    QMessageBox, QFileDialog, QDialog, QRadioButton, QButtonGroup
+
 from app.models.DEEP_STEGO.hide_image import hide_image
 from app.models.DEEP_STEGO.reveal_image import reveal_image
 from app.models.ESRGAN import RRDBNet_arch as arch
 from app.models.StableDiffusionAPI import StableDiffusionV2
-import torch
-import cv2
-import numpy as np
+from app.models.encryption import aes, blowfish
+from app.ui.components.backgroundwidget import BackgroundWidget
+from app.ui.components.customtextbox import CustomTextBox, CustomTextBoxForImageGen
 
 
 class MainAppWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         # vars
+        self.download_genimage_button = None
         self.gen_image_label = None
         self.text_desc_box = None
         self.main_content = None
@@ -196,7 +198,7 @@ class MainAppWindow(QMainWindow):
         image_display_layout.addWidget(radio_layout_widget)
 
         self.enc_display_label = QLabel()
-        self.enc_display_label.setAlignment(Qt.AlignLeft)
+        # self.enc_display_label.setAlignment(Qt.AlignCenter)
         pixmap = QPixmap("assets/dummy_images/image_dummy.png")
         self.enc_display_label.setPixmap(pixmap.scaled(256, 256, Qt.KeepAspectRatio))
         image_display_layout.addWidget(self.enc_display_label)
@@ -637,8 +639,9 @@ class MainAppWindow(QMainWindow):
         download_button = QPushButton("Download🔽")
         download_button.setObjectName("download_button")
         download_button.setEnabled(False)
-        # download_button.clicked.connect(self.download_image)
+        download_button.clicked.connect(self.download_image)
         button_layout.addWidget(download_button)
+        self.download_genimage_button = download_button
 
         # add the button layout to the main layout
         button_widget = QWidget()
@@ -656,8 +659,10 @@ class MainAppWindow(QMainWindow):
             image.save(gen_image_path)
             pixmap = QPixmap(gen_image_path)
             label.setPixmap(pixmap.scaled(400, 400, Qt.KeepAspectRatio))
+            self.download_genimage_button.setEnabled(True)
         except:
             QMessageBox.critical(self, "Generating error", "Failed to generate the image")
+
     def show_random_text(self, textbox):
         import json, random
         with open("C:/Users/asirw/PycharmProjects/InvisiCipher/app/ui/assets/json/lucky.json", "r") as f:

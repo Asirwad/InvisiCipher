@@ -19,6 +19,7 @@ QPushButton {
 QPushButton:hover {
   background: #9342ff;
   box-shadow: 0 0 30px 5px rgba(0, 142, 236, 0.815);
+  border: 1.5px solid transparent;
 }
 #logout_button {
     color: #ffffff;
@@ -29,7 +30,7 @@ QPushButton:hover {
 #logout_button:hover {
     background-color: #e81123;
     color: #ffffff;
-    border: 0px;
+    border: 1.5px solid transparent;
 }
 
 #side_navigation{
