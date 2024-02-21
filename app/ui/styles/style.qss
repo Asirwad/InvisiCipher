@@ -69,7 +69,7 @@ QToolTip {
   box-shadow: 0 0 0 0 #000000;
 }
 #luckyButton:hover {
-  background: #34daff;
+  background: #33beff;
   box-shadow: 0 0 30px 5px rgba(0, 142, 236, 0.815);
   border: 1.5px solid transparent;
 }
