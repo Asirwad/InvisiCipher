@@ -48,9 +48,9 @@ class CustomTextBoxForImageGen(QLineEdit):
             '''
             QLineEdit {
                 background-color: transparent;
-                border:1.5px solid;
+                border:1.2px solid;
                 border-radius: 5px;
-                border-color: #ffffff;
+                border-color: #fae69e;
                 font-size: 18px; 
                 color: #ffffff; 
                 padding: 8px 16px;
