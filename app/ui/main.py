@@ -176,9 +176,11 @@ class MainAppWindow(QMainWindow):
         radio_layout = QVBoxLayout()
         radio_layout.setAlignment(Qt.AlignLeft)
         self.aes_radio = QRadioButton("AES Encryption")
-        self.aes_radio.setStyleSheet("font-size: 16px; color: #fae69e; font-weight: bold;")
+        self.aes_radio.setToolTip("Widely adopted symmetric-key block cipher with strong security and flexibility")
+
         self.blowfish_radio = QRadioButton("Blowfish Encryption")
-        self.blowfish_radio.setStyleSheet("font-size: 16px; color: #fae69e; font-weight: bold;")
+        self.blowfish_radio.setToolTip("Fast, efficient symmetric-key block cipher with versatile key lengths")
+
         encryption_group = QButtonGroup()
         encryption_group.addButton(self.aes_radio)
         encryption_group.addButton(self.blowfish_radio)
@@ -265,9 +267,11 @@ class MainAppWindow(QMainWindow):
         radio_layout = QVBoxLayout()
         radio_layout.setAlignment(Qt.AlignLeft)
         self.aes_radio_dec = QRadioButton("AES Decryption")
-        self.aes_radio_dec.setStyleSheet("font-size: 16px; color: #fae69e; font-weight: bold;")
+        self.aes_radio_dec.setToolTip("Widely adopted symmetric-key block cipher with strong security and flexibility")
+
         self.blowfish_radio_dec = QRadioButton("Blowfish Decryption")
-        self.blowfish_radio_dec.setStyleSheet("font-size: 16px; color: #fae69e; font-weight: bold;")
+        self.blowfish_radio_dec.setToolTip("Fast, efficient symmetric-key block cipher with versatile key lengths")
+
         encryption_group = QButtonGroup()
         encryption_group.addButton(self.aes_radio_dec)
         encryption_group.addButton(self.blowfish_radio_dec)
@@ -613,6 +617,8 @@ class MainAppWindow(QMainWindow):
 
         # i'm feeling lucky button
         lucky_button = QPushButton("I'm feeling lucky")
+        lucky_button.setObjectName("luckyButton")
+        lucky_button.setToolTip("Selects a random text prompt")
         lucky_button.clicked.connect(lambda: self.show_random_text(self.text_desc_box))
         textbox_layout.addWidget(lucky_button)
 

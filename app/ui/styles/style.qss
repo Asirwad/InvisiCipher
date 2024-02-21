@@ -21,6 +21,18 @@ QPushButton:hover {
   box-shadow: 0 0 30px 5px rgba(0, 142, 236, 0.815);
   border: 1.5px solid transparent;
 }
+QRadioButton{
+    font-size: 16px;
+    color: #fae69e;
+    font-weight: semi-bold;
+}
+QToolTip {
+    font-size: 12px;
+    font-weight: semi-bold;
+    color: white;
+    background-color: #2c0067;
+    border: 1px solid #8b01ff;
+}
 #logout_button {
     color: #ffffff;
     padding: 8px 16px;
@@ -41,4 +53,23 @@ QPushButton:hover {
     background-color: #444654;
     padding: 0px 0px;
     border-radius: 12px;
+}
+#luckyButton {
+  position: relative;
+  padding: 22px 20px;
+  border-radius: 7px;
+  border: 1.5px solid #9342ff;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: Oswald, Arial, sans-serif;
+  letter-spacing: 1px;
+
+  color: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 0 0 0 #000000;
+}
+#luckyButton:hover {
+  background: #34daff;
+  box-shadow: 0 0 30px 5px rgba(0, 142, 236, 0.815);
+  border: 1.5px solid transparent;
 }
